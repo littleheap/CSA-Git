@@ -6,6 +6,7 @@
 
 using namespace std;
 #define ADDU 1
+#define ADDIU 9
 #define SUBU 3
 #define AND 4
 #define OR  5
@@ -261,8 +262,6 @@ int main() {
 
     int pc = 0;
     while (1) {
-        cout << "-------------------" << endl;
-
         // Fetch
         cout << "PC = " << pc << endl;
 
@@ -272,12 +271,15 @@ int main() {
 
         // If current insturciton is "11111111111111111111111111111111", then break;
         if (ins.to_string() == "11111111111111111111111111111111") {
+            cout << "-------------------" << endl;
+            cout << "Program is end." << endl;
             break;
         }
 
         switch (atoi(divide(ins.to_string(), 32, 31, 26).c_str())) {
             case 100011: {//lw指令
                 //lw指令解析
+                cout << "-------------------" << endl;
                 cout << "No." << pc / 4 << " Instruction is Load" << endl;
                 bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
                 bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
@@ -315,6 +317,7 @@ int main() {
             }
             case 101011: {//sw指令
                 //sw指令解析
+                cout << "-------------------" << endl;
                 cout << "No." << pc / 4 << " Instruction is Store" << endl;
                 bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
                 bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
@@ -350,6 +353,7 @@ int main() {
                 switch (atoi(divide(ins.to_string(), 32, 2, 0).c_str())) {
                     case ADDU: {//Addu
                         //Addu指令解析
+                        cout << "-------------------" << endl;
                         cout << "No." << pc / 4 << " Instruction is Addu" << endl;
                         bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
                         bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
@@ -389,12 +393,48 @@ int main() {
                 }
                 break;
             }
+
+            default: {//I-Type
+                switch (atoi(divide(ins.to_string(), 32, 31, 26).c_str())) {
+                    case 1001:{//addiu指令
+                        //addiu指令
+                        cout << "-------------------" << endl;
+                        cout << "No." << pc / 4 << " Instruction is Addiu" << endl;
+                        bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
+                        bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
+                        bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
+                        bitset<16> imm(divide(ins.to_string(), 32, 15, 0));
+                        cout << "opcode : " << opcode << endl;
+                        cout << "rs : " << rs << endl;
+                        cout << "rt : " << rt << endl;
+                        cout << "imm : " << imm << endl;
+
+                        //RF
+                        bitset<5> rd1 = rs;
+                        myRF.ReadWrite(rd1, bitset<5>(0), bitset<5>(0), bitset<32>(0), bitset<1>(0));
+                        cout << "RF IN : " << rs << endl;
+                        cout << "RF OUT : " << myRF.ReadData1 << endl;
+
+                        //ALU
+                        bitset<3> ALUOP('001');
+                        myALU.ALUOperation(ALUOP, myRF.ReadData1, signextend(imm));
+                        cout << "ALU IN : " << myRF.ReadData1 << " and " << signextend(imm) << endl;
+                        cout << "ALU OUT : " << myALU.ALUresult << endl;
+
+                        //WriteBack
+                        bitset<5> writeaddress = rt;
+                        bitset<1> writeenable(1);
+                        myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
+                        break;
+                    }
+                }
+            }
         }
         myRF.OutputRF(); // dump RF;    
     }
 
-    myRF.show();
-    myDataMem.show();
+//    myRF.show();
+//    myDataMem.show();
 
     myDataMem.OutputDataMem(); // dump data mem
 
