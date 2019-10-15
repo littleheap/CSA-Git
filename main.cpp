@@ -6,7 +6,7 @@
 
 using namespace std;
 #define ADDU 1
-#define ADDIU 9
+#define ADDIU 1001
 #define SUBU 3
 #define AND 4
 #define OR  5
@@ -396,7 +396,7 @@ int main() {
 
             default: {//I-Type
                 switch (atoi(divide(ins.to_string(), 32, 31, 26).c_str())) {
-                    case 1001:{//addiu指令
+                    case ADDIU:{//addiu指令
                         //addiu指令
                         cout << "-------------------" << endl;
                         cout << "No." << pc / 4 << " Instruction is Addiu" << endl;
