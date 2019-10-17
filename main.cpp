@@ -11,11 +11,11 @@ using namespace std;
 #define JUMP 10
 #define R_Type 000000
 #define ADDU 1
+#define SUBU 3
+#define AND 4
+#define OR  5
+#define NOR 7
 #define ADDIU 1001
-#define SUBU 11
-#define AND 100
-#define OR  101
-#define NOR 111
 #define MemSize 65536 // memory size, in reality, the memory size should be 2^32, but for this lab, for the space resaon, we keep it as this large number, but the memory is still 32-bit addressable.
 
 string divide(string target, int len, int i, int j) {
@@ -97,46 +97,46 @@ private:
 class ALU {
 public:
     bitset<32> ALUresult;
+    bitset<3> ALUOP;
 
     bitset<32> ALUOperation(bitset<3> ALUOP, bitset<32> oprand1, bitset<32> oprand2) {
         // implement the ALU operations by you.
         switch (ALUOP.to_ulong()) {
-            case 1: {
+            case ADDU: {
                 //addu: 无符号加法
                 long res = oprand1.to_ulong() + oprand2.to_ulong();
                 bitset<32> bitres(res);
                 ALUresult = bitres;
-                return bitres;
+                break;
             }
-            case 3: {
+            case SUBU: {
                 //subu: 无符号减法
                 long res = oprand1.to_ulong() - oprand2.to_ulong();
                 bitset<32> bitres(res);
                 ALUresult = bitres;
-                return bitres;
+                break;
             }
-            case 7: {
-                //nor: 或非
-                bitset<32> bitres(0);
-                bitres = (oprand1 | oprand2).operator~();
-                ALUresult = bitres;
-                return bitres;
-            }
-            case 5: {
-                //or: 或
-                bitset<32> bitres(0);
-                bitres = oprand1 | oprand2;
-                ALUresult = bitres;
-                return bitres;
-            }
-            case 4: {
+            case AND: {
                 //and: 与
                 bitset<32> bitres(0);
                 bitres = oprand1 & oprand2;
                 ALUresult = bitres;
-                return bitres;
+                break;
             }
-
+            case OR: {
+                //or: 或
+                bitset<32> bitres(0);
+                bitres = oprand1 | oprand2;
+                ALUresult = bitres;
+                break;
+            }
+            case NOR: {
+                //nor: 或非
+                bitset<32> bitres(0);
+                bitres = (oprand1 | oprand2).operator~();
+                ALUresult = bitres;
+                break;
+            }
         }
         return ALUresult;
     }
@@ -428,217 +428,103 @@ int main() {
                 myDataMem.MemoryAccess(addr, myRF.ReadData2, bitset<1>(0), w);
                 break;
             }
-
             case R_Type: {//R-Type
-                switch (atoi(divide(ins.to_string(), 32, 2, 0).c_str())) {
-                    case ADDU: {//Addu
-                        //Addu指令解析
-                        cout << "No." << pc / 4 << " Instruction is Addu" << endl;
-                        bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                        bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                        bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                        bitset<5> rd(divide(ins.to_string(), 32, 15, 11));
-                        bitset<5> shamt(divide(ins.to_string(), 32, 10, 6));
-                        bitset<6> func(divide(ins.to_string(), 32, 5, 0));
-                        cout << "opcode : " << opcode << endl;
-                        cout << "rs : " << rs << endl;
-                        cout << "rt : " << rt << endl;
-                        cout << "rd : " << rd << endl;
-                        cout << "shamt : " << shamt << endl;
-                        cout << "func : " << func << endl;
-
-                        //RF
-                        bitset<5> rd1 = rs;
-                        bitset<5> rd2 = rt;
-                        myRF.ReadWrite(rd1, rd2, bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                        cout << "RF IN : " << rs << " and " << rt << endl;
-                        cout << "RF OUT : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-
-                        //ALU
-                        bitset<3> ALUOP("001");
-                        myALU.ALUOperation(ALUOP, myRF.ReadData1, myRF.ReadData2);
-                        cout << "ALU IN : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-                        cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                        //WriteBack
-                        bitset<5> writeaddress = rd;
-                        bitset<1> writeenable(1);
-                        myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
+                //Decoder
+                cout << "No." << pc / 4 << " Instruction is R-type ";
+                switch (bitset<3>(divide(ins.to_string(), 32, 2, 0).c_str()).to_ulong()) {
+                    case ADDU: {
+                        cout << "Addu" << endl;
+                        myALU.ALUOP = bitset<3>("001");
                         break;
                     }
-                    case SUBU: {//Subu
-                        cout << "No." << pc / 4 << " Instruction is Subu" << endl;
-                        bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                        bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                        bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                        bitset<5> rd(divide(ins.to_string(), 32, 15, 11));
-                        bitset<5> shamt(divide(ins.to_string(), 32, 10, 6));
-                        bitset<6> func(divide(ins.to_string(), 32, 5, 0));
-                        cout << "opcode : " << opcode << endl;
-                        cout << "rs : " << rs << endl;
-                        cout << "rt : " << rt << endl;
-                        cout << "rd : " << rd << endl;
-                        cout << "shamt : " << shamt << endl;
-                        cout << "func : " << func << endl;
-
-                        //RF
-                        bitset<5> rd1 = rs;
-                        bitset<5> rd2 = rt;
-                        myRF.ReadWrite(rd1, rd2, bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                        cout << "RF IN : " << rs << " and " << rt << endl;
-                        cout << "RF OUT : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-
-                        //ALU
-                        bitset<3> ALUOP("011");
-                        myALU.ALUOperation(ALUOP, myRF.ReadData1, myRF.ReadData2);
-                        cout << "ALU IN : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-                        cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                        //WriteBack
-                        bitset<5> writeaddress = rd;
-                        bitset<1> writeenable(1);
-                        myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
+                    case SUBU: {
+                        cout << "Subu" << endl;
+                        myALU.ALUOP = bitset<3>("001");
                         break;
                     }
-                    case NOR: {//nor指令
-                        cout << "No." << pc / 4 << " Instruction is Nor" << endl;
-                        bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                        bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                        bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                        bitset<5> rd(divide(ins.to_string(), 32, 15, 11));
-                        bitset<5> shamt(divide(ins.to_string(), 32, 10, 6));
-                        bitset<6> func(divide(ins.to_string(), 32, 5, 0));
-                        cout << "opcode : " << opcode << endl;
-                        cout << "rs : " << rs << endl;
-                        cout << "rt : " << rt << endl;
-                        cout << "rd : " << rd << endl;
-                        cout << "shamt : " << shamt << endl;
-                        cout << "func : " << func << endl;
-
-                        //RF
-                        bitset<5> rd1 = rs;
-                        bitset<5> rd2 = rt;
-                        myRF.ReadWrite(rd1, rd2, bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                        cout << "RF IN : " << rs << " and " << rt << endl;
-                        cout << "RF OUT : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-
-                        //ALU
-                        bitset<3> ALUOP("111");
-                        myALU.ALUOperation(ALUOP, myRF.ReadData1, myRF.ReadData2);
-                        cout << "ALU IN : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-                        cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                        //WriteBack
-                        bitset<5> writeaddress = rd;
-                        bitset<1> writeenable(1);
-                        myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
+                    case AND: {
+                        cout << "And" << endl;
+                        myALU.ALUOP = bitset<3>("001");
                         break;
                     }
-                    case OR: {//or指令
-                        cout << "No." << pc / 4 << " Instruction is Or" << endl;
-                        bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                        bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                        bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                        bitset<5> rd(divide(ins.to_string(), 32, 15, 11));
-                        bitset<5> shamt(divide(ins.to_string(), 32, 10, 6));
-                        bitset<6> func(divide(ins.to_string(), 32, 5, 0));
-                        cout << "opcode : " << opcode << endl;
-                        cout << "rs : " << rs << endl;
-                        cout << "rt : " << rt << endl;
-                        cout << "rd : " << rd << endl;
-                        cout << "shamt : " << shamt << endl;
-                        cout << "func : " << func << endl;
-
-                        //RF
-                        bitset<5> rd1 = rs;
-                        bitset<5> rd2 = rt;
-                        myRF.ReadWrite(rd1, rd2, bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                        cout << "RF IN : " << rs << " and " << rt << endl;
-                        cout << "RF OUT : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-
-                        //ALU
-                        bitset<3> ALUOP("101");
-                        myALU.ALUOperation(ALUOP, myRF.ReadData1, myRF.ReadData2);
-                        cout << "ALU IN : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-                        cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                        //WriteBack
-                        bitset<5> writeaddress = rd;
-                        bitset<1> writeenable(1);
-                        myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
+                    case OR: {
+                        cout << "Or" << endl;
+                        myALU.ALUOP = bitset<3>("001");
                         break;
                     }
-                    case AND: {//or指令
-                        cout << "No." << pc / 4 << " Instruction is And" << endl;
-                        bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                        bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                        bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                        bitset<5> rd(divide(ins.to_string(), 32, 15, 11));
-                        bitset<5> shamt(divide(ins.to_string(), 32, 10, 6));
-                        bitset<6> func(divide(ins.to_string(), 32, 5, 0));
-                        cout << "opcode : " << opcode << endl;
-                        cout << "rs : " << rs << endl;
-                        cout << "rt : " << rt << endl;
-                        cout << "rd : " << rd << endl;
-                        cout << "shamt : " << shamt << endl;
-                        cout << "func : " << func << endl;
-
-                        //RF
-                        bitset<5> rd1 = rs;
-                        bitset<5> rd2 = rt;
-                        myRF.ReadWrite(rd1, rd2, bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                        cout << "RF IN : " << rs << " and " << rt << endl;
-                        cout << "RF OUT : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-
-                        //ALU
-                        bitset<3> ALUOP("100");
-                        myALU.ALUOperation(ALUOP, myRF.ReadData1, myRF.ReadData2);
-                        cout << "ALU IN : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-                        cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                        //WriteBack
-                        bitset<5> writeaddress = rd;
-                        bitset<1> writeenable(1);
-                        myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
+                    case NOR: {
+                        cout << "Nor" << endl;
+                        myALU.ALUOP = bitset<3>("001");
                         break;
                     }
                 }
+                bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
+                bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
+                bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
+                bitset<5> rd(divide(ins.to_string(), 32, 15, 11));
+                bitset<5> shamt(divide(ins.to_string(), 32, 10, 6));
+                bitset<6> func(divide(ins.to_string(), 32, 5, 0));
+                cout << "opcode : " << opcode << endl;
+                cout << "rs : " << rs << endl;
+                cout << "rt : " << rt << endl;
+                cout << "rd : " << rd << endl;
+                cout << "shamt : " << shamt << endl;
+                cout << "func : " << func << endl;
+
+                //RF
+                bitset<5> rd1 = rs;
+                bitset<5> rd2 = rt;
+                myRF.ReadWrite(rd1, rd2, bitset<5>(0), bitset<32>(0), bitset<1>(0));
+                cout << "RF IN : " << rs << " and " << rt << endl;
+                cout << "RF OUT : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
+
+                //ALU
+                myALU.ALUOperation(myALU.ALUOP, myRF.ReadData1, myRF.ReadData2);
+                cout << "ALU IN : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
+                cout << "ALU OUT : " << myALU.ALUresult << endl;
+
+                //WriteBack
+                bitset<5> writeaddress = rd;
+                bitset<1> writeenable(1);
+                myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
+
                 break;
             }
-
             default: {//I-Type
-                switch (atoi(divide(ins.to_string(), 32, 28, 26).c_str())) {
-                    case ADDU: {//addiu指令
-                        //addiu指令
-                        cout << "No." << pc / 4 << " Instruction is Addiu" << endl;
-                        bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                        bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                        bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                        bitset<16> imm(divide(ins.to_string(), 32, 15, 0));
-                        cout << "opcode : " << opcode << endl;
-                        cout << "rs : " << rs << endl;
-                        cout << "rt : " << rt << endl;
-                        cout << "imm : " << imm << endl;
-
-                        //RF
-                        bitset<5> rd1 = rs;
-                        myRF.ReadWrite(rd1, bitset<5>(0), bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                        cout << "RF IN : " << rs << endl;
-                        cout << "RF OUT : " << myRF.ReadData1 << endl;
-
-                        //ALU
-                        bitset<3> ALUOP('101');
-                        myALU.ALUOperation(ALUOP, myRF.ReadData1, signextend(imm));
-                        cout << "ALU IN : " << myRF.ReadData1 << " and " << signextend(imm) << endl;
-                        cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                        //WriteBack
-                        bitset<5> writeaddress = rt;
-                        bitset<1> writeenable(1);
-                        myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
+                cout << "No." << pc / 4 << " Instruction is I-type ";
+                switch (bitset<3>(divide(ins.to_string(), 32, 28, 26).c_str()).to_ulong()) {
+                    case ADDU: {
+                        cout << "Addiu" << endl;
+                        myALU.ALUOP = bitset<3>("001");
                         break;
                     }
                 }
+                bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
+                bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
+                bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
+                bitset<16> imm(divide(ins.to_string(), 32, 15, 0));
+                cout << "opcode : " << opcode << endl;
+                cout << "rs : " << rs << endl;
+                cout << "rt : " << rt << endl;
+                cout << "imm : " << imm << endl;
+
+                //RF
+                bitset<5> rd1 = rs;
+                myRF.ReadWrite(rd1, bitset<5>(0), bitset<5>(0), bitset<32>(0), bitset<1>(0));
+                cout << "RF IN : " << rs << endl;
+                cout << "RF OUT : " << myRF.ReadData1 << endl;
+
+                //ALU
+                myALU.ALUOperation(myALU.ALUOP, myRF.ReadData1, signextend(imm));
+                cout << "ALU IN : " << myRF.ReadData1 << " and " << signextend(imm) << endl;
+                cout << "ALU OUT : " << myALU.ALUresult << endl;
+
+                //WriteBack
+                bitset<5> writeaddress = rt;
+                bitset<1> writeenable(1);
+                myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
+
+                break;
             }
         }
         myRF.OutputRF(); // dump RF;    
