@@ -321,6 +321,7 @@ int main() {
     int cycle = 0;
     stateStruct state;
     while (1) {
+
         stateStruct newState;
 
         newState.IF.PC = bitset<32>(state.IF.PC.to_ulong() + 4);
@@ -340,33 +341,52 @@ int main() {
         /* --------------------- MEM stage --------------------- */
         if (state.MEM.nop) {
             //当前cycle为nop：主要任务就是继续将前面EX传来的信息传给WB
-            newState.WB.Wrt_data = state.MEM.ALUresult;
+            newState.WB.Wrt_data = state.WB.Wrt_data;
+            newState.WB.Rs = state.MEM.Rs;
+            newState.WB.Rt = state.MEM.Rt;
+            newState.WB.Wrt_reg_addr = state.MEM.Wrt_reg_addr;
+            newState.WB.wrt_enable = state.MEM.wrt_enable;
+            newState.WB.nop = state.MEM.nop;//与当前nop一致
+
         } else {
             //当前stage不为nop：要进行一些MEM操作
             if (state.MEM.wrt_mem) {
                 //SW：MEM执行写操作（无返回值）
                 myDataMem.writeDataMem(state.MEM.ALUresult, state.MEM.Store_data);
-                newState.WB.Wrt_data = bitset<32>(0);
+                newState.WB.Wrt_data = myDataMem.readDataMem(state.MEM.ALUresult);
             } else if (state.MEM.rd_mem) {
                 //LW：MEM执行读操作（返回32位数据）
                 newState.WB.Wrt_data = myDataMem.readDataMem(state.MEM.ALUresult);
+            } else if (state.MEM.wrt_enable) {
+                //addu或subu
+                newState.WB.Wrt_data = state.MEM.ALUresult;
             }
         }
+
         newState.WB.Rs = state.MEM.Rs;
         newState.WB.Rt = state.MEM.Rt;
         newState.WB.Wrt_reg_addr = state.MEM.Wrt_reg_addr;
         newState.WB.wrt_enable = state.MEM.wrt_enable;
         if (state.MEM.wrt_enable == true) {
             //说明下一个cycle的WB要写回
-            newState.WB.nop = false;
+            newState.WB.nop = state.MEM.nop;//与当前nop一致
         } else {
             //说明下一个cycle的WB不需要写回
-            newState.WB.nop = true;
+            newState.WB.nop = state.MEM.nop;//与当前nop一致
         }
 
         /* --------------------- EX stage --------------------- */
         if (state.EX.nop) {
             //当前cycle为nop：暂时什么都不做，没有指令需要EX nop然后后面MEM接着操作的
+            newState.MEM.ALUresult = state.MEM.ALUresult;
+            newState.MEM.Store_data = state.MEM.Store_data;
+            newState.MEM.Rs = state.MEM.Rs;
+            newState.MEM.Rt = state.MEM.Rt;
+            newState.MEM.Wrt_reg_addr = state.MEM.Wrt_reg_addr;
+            newState.MEM.wrt_enable = state.MEM.wrt_enable;
+            newState.MEM.rd_mem = state.MEM.rd_mem;
+            newState.MEM.wrt_mem = state.MEM.wrt_mem;
+            newState.MEM.nop = state.EX.nop; //与当前nop一致
         } else {
             if (state.EX.alu_op) {
                 //addu,lw,sw
@@ -375,20 +395,20 @@ int main() {
                     long res = state.EX.Read_data1.to_ulong() + signextend(state.EX.Imm).to_ulong();
                     newState.MEM.ALUresult = bitset<32>(res);
                     //指令是lw,sw说明下一cycle中MEM要激活
-                    newState.MEM.nop = false;
+                    newState.MEM.nop = state.EX.nop; //与当前nop一致
                 } else {
                     //addu
                     long res = state.EX.Read_data1.to_ulong() + state.EX.Read_data2.to_ulong();
                     newState.MEM.ALUresult = bitset<32>(res);
                     //指令是R-type的addu，说明下一cycle中MEM不需要激活
-                    newState.MEM.nop = true;
+                    newState.MEM.nop = state.EX.nop; //与当前nop一致
                 }
             } else {
                 //subu
                 long res = state.EX.Read_data1.to_ulong() - state.EX.Read_data2.to_ulong();
                 newState.MEM.ALUresult = bitset<32>(res);
                 //指令是R-type的subu，说明下一cycle中MEM不需要激活
-                newState.MEM.nop = true;
+                newState.MEM.nop = state.EX.nop; //与当前nop一致
             }
             newState.MEM.Store_data = state.EX.Read_data2;
             newState.MEM.Rs = state.EX.Rs;
@@ -396,15 +416,26 @@ int main() {
             newState.MEM.Wrt_reg_addr = state.EX.Wrt_reg_addr;
             newState.MEM.wrt_enable = state.EX.wrt_enable;
             newState.MEM.rd_mem = state.EX.rd_mem;
-            newState.MEM.wrt_enable = state.EX.wrt_enable;
+            newState.MEM.wrt_mem = state.EX.wrt_mem;
         }
 
 
         /* --------------------- ID stage --------------------- */
         if (state.ID.nop) {
-            //暂时什么都不做
+            newState.EX.nop = state.ID.nop;
+            newState.EX.Read_data1 = state.EX.Read_data1;
+            newState.EX.Read_data2 = state.EX.Read_data2;
+            newState.EX.is_I_type = state.EX.is_I_type;
+            newState.EX.wrt_enable = state.EX.wrt_enable;
+            newState.EX.rd_mem = state.EX.rd_mem;
+            newState.EX.wrt_mem = state.EX.wrt_mem;
+            newState.EX.Wrt_reg_addr = state.EX.Wrt_reg_addr;
+            newState.EX.Imm = state.EX.Imm;
+            newState.EX.Rs = state.EX.Rs;
+            newState.EX.Rt = state.EX.Rt;
+            newState.EX.alu_op = state.EX.alu_op;
         } else {
-            newState.EX.nop = false;
+            newState.EX.nop = state.ID.nop; // 保持一致
             bitset<6> opcode(divide(state.ID.Instr.to_string(), 32, 31, 26)); //获取opcode
             if (opcode.to_ulong() == 0) {
                 //指令为R-type：addu或者subu
@@ -420,7 +451,7 @@ int main() {
                 newState.EX.rd_mem = false;
                 newState.EX.wrt_mem = false;
                 newState.EX.Wrt_reg_addr = rd;
-                newState.EX.Imm = bitset<16>(divide(state.ID.Instr.to_string(), 32, 15, 0));;
+                newState.EX.Imm = bitset<16>(divide(state.ID.Instr.to_string(), 32, 15, 0));
                 newState.EX.Rs = rs;
                 newState.EX.Rt = rt;
                 if (bitset<6>(divide(state.ID.Instr.to_string(), 32, 5, 0)) == 33) {
@@ -437,7 +468,7 @@ int main() {
                 bitset<16> imm(divide(state.ID.Instr.to_string(), 32, 15, 0));
                 newState.EX.alu_op = true;
                 newState.EX.Read_data1 = myRF.readRF(rs);
-                newState.EX.Read_data2 = bitset<32>(0);
+                newState.EX.Read_data2 = myRF.readRF(rt);
                 newState.EX.is_I_type = true;
                 newState.EX.Wrt_reg_addr = rt;
                 newState.EX.Imm = imm;
@@ -451,7 +482,7 @@ int main() {
                         newState.EX.wrt_mem = false;
                         break;
                     }
-                    case 42: {
+                    case 43: {
                         //sw
                         newState.EX.wrt_enable = false;
                         newState.EX.rd_mem = false;
@@ -478,12 +509,11 @@ int main() {
             newState.ID.Instr = myInsMem.readInstr(state.IF.PC);
         } else {
             newState.ID.Instr = myInsMem.readInstr(state.IF.PC);
-            cout << myInsMem.readInstr(state.IF.PC) << endl;
             if (myInsMem.readInstr(state.IF.PC).to_string() == "11111111111111111111111111111111") {
                 //说明是halt
                 newState.IF.nop = true;
                 newState.ID.nop = true;
-                newState.IF.PC = state.IF.PC;
+                newState.IF.PC = state.IF.PC; //不再PC+4
             } else {
                 //正常指令
                 newState.IF.nop = false;
@@ -491,7 +521,6 @@ int main() {
                 newState.ID.nop = false;
             }
         }
-
 
         if (state.IF.nop && state.ID.nop && state.EX.nop && state.MEM.nop && state.WB.nop)
             break;
