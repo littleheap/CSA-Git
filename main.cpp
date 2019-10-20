@@ -377,7 +377,6 @@ int main() {
 
         /* --------------------- EX stage --------------------- */
         if (state.EX.nop) {
-            //当前cycle为nop：暂时什么都不做，没有指令需要EX nop然后后面MEM接着操作的
             newState.MEM.ALUresult = state.MEM.ALUresult;
             newState.MEM.Store_data = state.MEM.Store_data;
             newState.MEM.Rs = state.MEM.Rs;
