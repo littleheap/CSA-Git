@@ -5,18 +5,7 @@
 #include<fstream>
 
 using namespace std;
-#define LW 100011
-#define SW 101011
-#define BEQ 100
-#define JUMP 10
-#define R_Type 000000
-#define ADDU 1
-#define SUBU 3
-#define AND 4
-#define OR  5
-#define NOR 7
-#define ADDIU 1001
-#define MemSize 65536 // memory size, in reality, the memory size should be 2^32, but for this lab, for the space resaon, we keep it as this large number, but the memory is still 32-bit addressable.
+#define MemSize 1000 // memory size, in reality, the memory size should be 2^32, but for this lab, for the space resaon, we keep it as this large number, but the memory is still 32-bit addressable.
 
 string divide(string target, int len, int i, int j) {
     char buf[len];
@@ -38,119 +27,145 @@ bitset<32> signextend(bitset<16> imm) {
     }
 }
 
-/**
- * Register File
- */
+struct IFStruct {
+    bitset<32> PC;
+    bool nop;
+
+    IFStruct() {
+        PC = bitset<32>(0);
+        nop = false;
+    }
+};
+
+struct IDStruct {
+    bitset<32> Instr;
+    bool nop;
+
+    IDStruct() {
+        Instr = bitset<32>(0);
+        nop = true;
+    }
+};
+
+struct EXStruct {
+    bitset<32> Read_data1;
+    bitset<32> Read_data2;
+    bitset<16> Imm;
+    bitset<5> Rs;
+    bitset<5> Rt;
+    bitset<5> Wrt_reg_addr;
+    bool is_I_type;
+    bool rd_mem;
+    bool wrt_mem;
+    bool alu_op;     //1 for addu, lw, sw, 0 for subu
+    bool wrt_enable;
+    bool nop;
+
+    EXStruct() {
+        Read_data1 = bitset<32>(0);
+        Read_data2 = bitset<32>(0);
+        Imm = bitset<16>(0);
+        Rs = bitset<5>(0);
+        Rt = bitset<5>(0);
+        Wrt_reg_addr = bitset<5>(0);
+        is_I_type = false;
+        rd_mem = false;
+        wrt_mem = false;
+        alu_op = true;
+        wrt_enable = false;
+        nop = true;
+    }
+};
+
+struct MEMStruct {
+    bitset<32> ALUresult;
+    bitset<32> Store_data;
+    bitset<5> Rs;
+    bitset<5> Rt;
+    bitset<5> Wrt_reg_addr;
+    bool rd_mem;
+    bool wrt_mem;
+    bool wrt_enable;
+    bool nop;
+
+    MEMStruct() {
+        ALUresult = bitset<32>(0);
+        Store_data = bitset<32>(0);
+        Rs = bitset<5>(0);
+        Rt = bitset<5>(0);
+        Wrt_reg_addr = bitset<5>(0);
+        rd_mem = false;
+        wrt_mem = false;
+        wrt_enable = false;
+        nop = true;
+    }
+};
+
+struct WBStruct {
+    bitset<32> Wrt_data;
+    bitset<5> Rs;
+    bitset<5> Rt;
+    bitset<5> Wrt_reg_addr;
+    bool wrt_enable;
+    bool nop;
+
+    WBStruct() {
+        Wrt_data = bitset<32>(0);
+        Rs = bitset<5>(0);
+        Rt = bitset<5>(0);
+        Wrt_reg_addr = bitset<5>(0);
+        wrt_enable = false;
+        nop = true;
+    }
+};
+
+struct stateStruct {
+    IFStruct IF;
+    IDStruct ID;
+    EXStruct EX;
+    MEMStruct MEM;
+    WBStruct WB;
+};
+
 class RF {
 public:
-    bitset<32> ReadData1, ReadData2;
+    bitset<32> Reg_data;
 
     RF() {
-        Registers.resize(32); //数据空间设置32
-        Registers[0] = bitset<32>(0); //0号空间固定为常数0
+        Registers.resize(32);
+        Registers[0] = bitset<32>(0);
     }
 
-    void show() {
-        cout << "-------------------" << endl;
-        cout << "RF Show : " << endl;
-        for (int i = 0; i < 32; i++) {
-            cout << Registers[i] << endl;
-        }
-        cout << "-------------------" << endl;
+    bitset<32> readRF(bitset<5> Reg_addr) {
+        Reg_data = Registers[Reg_addr.to_ulong()];
+        return Reg_data;
     }
 
-    void ReadWrite(bitset<5> RdReg1, bitset<5> RdReg2, bitset<5> WrtReg, bitset<32> WrtData, bitset<1> WrtEnable) {
-        // implement the funciton by you.
-        ReadData1 = Registers[RdReg1.to_ulong()];
-        ReadData2 = Registers[RdReg2.to_ulong()];
-        if (WrtEnable.to_ulong() == 1) {
-            Registers[WrtReg.to_ulong()] = WrtData;
-            cout << "WB RF-addr : " << WrtReg.to_ulong() << endl;
-            cout << "WB Data : " << WrtData << endl;
-            return;
-        }
+    void writeRF(bitset<5> Reg_addr, bitset<32> Wrt_reg_data) {
+        Registers[Reg_addr.to_ulong()] = Wrt_reg_data;
     }
 
-    void OutputRF() // write RF results to file
-    {
+    void outputRF() {
         ofstream rfout;
         rfout.open("RFresult.txt", std::ios_base::app);
         if (rfout.is_open()) {
-            rfout << "A state of RF:" << endl;
+            rfout << "State of RF:\t" << endl;
             for (int j = 0; j < 32; j++) {
                 rfout << Registers[j] << endl;
             }
-
         } else cout << "Unable to open file";
         rfout.close();
-
     }
 
 private:
-    vector<bitset<32>> Registers;
-
+    vector<bitset<32> > Registers;
 };
 
-/**
- * ALU
- */
-class ALU {
-public:
-    bitset<32> ALUresult;
-    bitset<3> ALUOP;
-
-    bitset<32> ALUOperation(bitset<3> ALUOP, bitset<32> oprand1, bitset<32> oprand2) {
-        // implement the ALU operations by you.
-        switch (ALUOP.to_ulong()) {
-            case ADDU: {
-                //addu: 无符号加法
-                long res = oprand1.to_ulong() + oprand2.to_ulong();
-                bitset<32> bitres(res);
-                ALUresult = bitres;
-                break;
-            }
-            case SUBU: {
-                //subu: 无符号减法
-                long res = oprand1.to_ulong() - oprand2.to_ulong();
-                bitset<32> bitres(res);
-                ALUresult = bitres;
-                break;
-            }
-            case AND: {
-                //and: 与
-                bitset<32> bitres(0);
-                bitres = oprand1 & oprand2;
-                ALUresult = bitres;
-                break;
-            }
-            case OR: {
-                //or: 或
-                bitset<32> bitres(0);
-                bitres = oprand1 | oprand2;
-                ALUresult = bitres;
-                break;
-            }
-            case NOR: {
-                //nor: 或非
-                bitset<32> bitres(0);
-                bitres = (oprand1 | oprand2).operator~();
-                ALUresult = bitres;
-                break;
-            }
-        }
-        return ALUresult;
-    }
-};
-
-/**
- * Instruction Memory
- */
 class INSMem {
 public:
     bitset<32> Instruction;
 
-    INSMem() // read instruction memory
-    {
+    INSMem() {
         IMem.resize(MemSize);
         ifstream imem;
         string line;
@@ -171,36 +186,29 @@ public:
                 }
             }
             cout << "-------------------" << endl;
-        } else cout << "Unable to open file - INSMen" << endl;
+        } else cout << "Unable to open INSMem file";
         imem.close();
-
     }
 
-    bitset<32> ReadMemory(bitset<32> ReadAddress) {
-        // implement by you. (Read the byte at the ReadAddress and the following three byte).
-        string s = "";
-        for (int i = 0; i < 4; i++) {
-            s += IMem[ReadAddress.to_ulong() + i].to_string();
-        }
-        bitset<32> ins(s);
-        Instruction = ins;
+    bitset<32> readInstr(bitset<32> ReadAddress) {
+        string insmem;
+        insmem.append(IMem[ReadAddress.to_ulong()].to_string());
+        insmem.append(IMem[ReadAddress.to_ulong() + 1].to_string());
+        insmem.append(IMem[ReadAddress.to_ulong() + 2].to_string());
+        insmem.append(IMem[ReadAddress.to_ulong() + 3].to_string());
+        Instruction = bitset<32>(insmem);        //read instruction memory
         return Instruction;
     }
 
 private:
-    vector<bitset<8>> IMem;
-
+    vector<bitset<8> > IMem;
 };
 
-/**
- * DataMemory
- */
 class DataMem {
 public:
-    bitset<32> readdata;
+    bitset<32> ReadData;
 
-    DataMem() // DataMemory构造函数，初始化DataMemory数据
-    {
+    DataMem() {
         DMem.resize(MemSize);
         ifstream dmem;
         string line;
@@ -221,57 +229,28 @@ public:
                 }
             }
             cout << "-------------------" << endl;
-        } else cout << "Unable to open file - DataMem" << endl;
+        } else cout << "Unable to open DataMem file";
         dmem.close();
     }
 
-    void show() {
-        cout << "-------------------" << endl;
-        cout << "DM Show : " << endl;
-        for (int i = 0; i < 40; i++) {
-            cout << DMem[i] << endl;
-        }
-        cout << "......" << endl;
-        cout << "-------------------" << endl;
+    bitset<32> readDataMem(bitset<32> Address) {
+        string datamem;
+        datamem.append(DMem[Address.to_ulong()].to_string());
+        datamem.append(DMem[Address.to_ulong() + 1].to_string());
+        datamem.append(DMem[Address.to_ulong() + 2].to_string());
+        datamem.append(DMem[Address.to_ulong() + 3].to_string());
+        ReadData = bitset<32>(datamem);        //read data memory
+        return ReadData;
     }
 
-    string divide(string target, int len, int i, int j) {
-        char buf[len];
-        strcpy(buf, target.c_str());
-        string res = "";
-        for (int k = len - i - 1; k <= len - j - 1; k++) {
-            res += buf[k];
-        }
-        return res;
+    void writeDataMem(bitset<32> Address, bitset<32> WriteData) {
+        DMem[Address.to_ulong()] = bitset<8>(WriteData.to_string().substr(0, 8));
+        DMem[Address.to_ulong() + 1] = bitset<8>(WriteData.to_string().substr(8, 8));
+        DMem[Address.to_ulong() + 2] = bitset<8>(WriteData.to_string().substr(16, 8));
+        DMem[Address.to_ulong() + 3] = bitset<8>(WriteData.to_string().substr(24, 8));
     }
 
-    bitset<32> MemoryAccess(bitset<32> Address, bitset<32> WriteData, bitset<1> readmem, bitset<1> writemem) {
-        // implement by you.
-        if (readmem.to_ulong() == 1) {
-            //读操作
-            string res = "";
-            for (int i = 0; i < 4; i++) {
-                res += DMem[Address.to_ulong() + i].to_string();
-            }
-            readdata = bitset<32>(res);
-            return readdata;
-        } else if (writemem.to_ulong() == 1) {
-            //写操作
-            for (int i = 0; i < 4; i++) {
-                DMem[Address.to_ulong() + i] = bitset<8>(
-                        divide(WriteData.to_string(), 32, 32 - 8 * i - 1, 32 - 8 * (i + 1)));
-            }
-            cout << "DM Write-addr : " << Address << endl;
-            cout << "DM Write-data : " << DMem[Address.to_ulong()] << DMem[Address.to_ulong() + 1]
-                 << DMem[Address.to_ulong() + 2]
-                 << DMem[Address.to_ulong() + 3] << endl;
-        }
-
-        return readdata;
-    }
-
-    void OutputDataMem()  // write dmem results to file
-    {
+    void outputDataMem() {
         ofstream dmemout;
         dmemout.open("dmemresult.txt");
         if (dmemout.is_open()) {
@@ -279,262 +258,253 @@ public:
                 dmemout << DMem[j] << endl;
             }
 
-        } else cout << "Unable to open file - OutputDataMem" << endl;
+        } else cout << "Unable to open file";
         dmemout.close();
-
     }
 
 private:
-    vector<bitset<8>> DMem;
-
+    vector<bitset<8> > DMem;
 };
+
+void printState(stateStruct state, int cycle) {
+    ofstream printstate;
+    printstate.open("stateresult.txt", std::ios_base::app);
+    if (printstate.is_open()) {
+        printstate << "State after executing cycle:\t" << cycle << endl;
+
+        printstate << "IF.PC:\t" << state.IF.PC.to_ulong() << endl;
+        printstate << "IF.nop:\t" << state.IF.nop << endl;
+
+        printstate << "ID.Instr:\t" << state.ID.Instr << endl;
+        printstate << "ID.nop:\t" << state.ID.nop << endl;
+
+        printstate << "EX.Read_data1:\t" << state.EX.Read_data1 << endl;
+        printstate << "EX.Read_data2:\t" << state.EX.Read_data2 << endl;
+        printstate << "EX.Imm:\t" << state.EX.Imm << endl;
+        printstate << "EX.Rs:\t" << state.EX.Rs << endl;
+        printstate << "EX.Rt:\t" << state.EX.Rt << endl;
+        printstate << "EX.Wrt_reg_addr:\t" << state.EX.Wrt_reg_addr << endl;
+        printstate << "EX.is_I_type:\t" << state.EX.is_I_type << endl;
+        printstate << "EX.rd_mem:\t" << state.EX.rd_mem << endl;
+        printstate << "EX.wrt_mem:\t" << state.EX.wrt_mem << endl;
+        printstate << "EX.alu_op:\t" << state.EX.alu_op << endl;
+        printstate << "EX.wrt_enable:\t" << state.EX.wrt_enable << endl;
+        printstate << "EX.nop:\t" << state.EX.nop << endl;
+
+        printstate << "MEM.ALUresult:\t" << state.MEM.ALUresult << endl;
+        printstate << "MEM.Store_data:\t" << state.MEM.Store_data << endl;
+        printstate << "MEM.Rs:\t" << state.MEM.Rs << endl;
+        printstate << "MEM.Rt:\t" << state.MEM.Rt << endl;
+        printstate << "MEM.Wrt_reg_addr:\t" << state.MEM.Wrt_reg_addr << endl;
+        printstate << "MEM.rd_mem:\t" << state.MEM.rd_mem << endl;
+        printstate << "MEM.wrt_mem:\t" << state.MEM.wrt_mem << endl;
+        printstate << "MEM.wrt_enable:\t" << state.MEM.wrt_enable << endl;
+        printstate << "MEM.nop:\t" << state.MEM.nop << endl;
+
+        printstate << "WB.Wrt_data:\t" << state.WB.Wrt_data << endl;
+        printstate << "WB.Rs:\t" << state.WB.Rs << endl;
+        printstate << "WB.Rt:\t" << state.WB.Rt << endl;
+        printstate << "WB.Wrt_reg_addr:\t" << state.WB.Wrt_reg_addr << endl;
+        printstate << "WB.wrt_enable:\t" << state.WB.wrt_enable << endl;
+        printstate << "WB.nop:\t" << state.WB.nop << endl;
+    } else cout << "Unable to open file";
+    printstate.close();
+}
 
 
 int main() {
+
     RF myRF;
-    ALU myALU;
     INSMem myInsMem;
     DataMem myDataMem;
 
-    int pc = 0;
+    int cycle = 0;
+    stateStruct state;
     while (1) {
-        // Fetch
-        cout << "-------------------" << endl;
-        cout << "PC = " << pc << endl;
+        stateStruct newState;
 
-        bitset<32> ins = myInsMem.ReadMemory(pc);
-        pc += 4;
-        cout << "Instruction = " << ins << endl;
+        newState.IF.PC = bitset<32>(state.IF.PC.to_ulong() + 4);
 
-        // If current insturciton is "11111111111111111111111111111111", then break;
-        if (ins.to_string() == "11111111111111111111111111111111") {
-            cout << "-------------------" << endl;
-            cout << "Program is end." << endl;
-            break;
+        /* --------------------- WB stage --------------------- */
+        if (state.WB.nop) {
+            //nothing
+        } else {
+            if (state.WB.wrt_enable) {
+                //执行WriteBack
+                myRF.writeRF(state.WB.Wrt_reg_addr, state.WB.Wrt_data);
+            } else {
+                //nothing
+            }
         }
 
-        switch (atoi(divide(ins.to_string(), 32, 31, 26).c_str())) {
-            case BEQ: {//beq指令
-                //beq指令解析
-                cout << "No." << pc / 4 << " Instruction is Beq" << endl;
-                bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                bitset<16> imm(divide(ins.to_string(), 32, 15, 0));
-                cout << "opcode : " << opcode << endl;
-                cout << "rs : " << rs << endl;
-                cout << "rt : " << rt << endl;
-                cout << "imm : " << imm << endl;
+        /* --------------------- MEM stage --------------------- */
+        if (state.MEM.nop) {
+            //当前cycle为nop：主要任务就是继续将前面EX传来的信息传给WB
+            newState.WB.Wrt_data = state.MEM.ALUresult;
+        } else {
+            //当前stage不为nop：要进行一些MEM操作
+            if (state.MEM.wrt_mem) {
+                //SW：MEM执行写操作（无返回值）
+                myDataMem.writeDataMem(state.MEM.ALUresult, state.MEM.Store_data);
+                newState.WB.Wrt_data = bitset<32>(0);
+            } else if (state.MEM.rd_mem) {
+                //LW：MEM执行读操作（返回32位数据）
+                newState.WB.Wrt_data = myDataMem.readDataMem(state.MEM.ALUresult);
+            }
+        }
+        newState.WB.Rs = state.MEM.Rs;
+        newState.WB.Rt = state.MEM.Rt;
+        newState.WB.Wrt_reg_addr = state.MEM.Wrt_reg_addr;
+        newState.WB.wrt_enable = state.MEM.wrt_enable;
+        if (state.MEM.wrt_enable == true) {
+            //说明下一个cycle的WB要写回
+            newState.WB.nop = false;
+        } else {
+            //说明下一个cycle的WB不需要写回
+            newState.WB.nop = true;
+        }
 
-                //RF
-                bitset<5> rd1 = rs;
-                bitset<5> rd2 = rt;
-                myRF.ReadWrite(rd1, rd2, bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                cout << "RF IN : " << rs << " and " << rt << endl;
-                cout << "RF OUT : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-
-                if (myRF.ReadData1 == myRF.ReadData2) {
-                    cout << "Rs is equal to Rt" << endl;
-                    pc += signextend(imm).to_ulong() * 4;
-                    cout << "pc = pc + 4 + offset(" << signextend(imm).to_ulong() << "*4) = " << pc << endl;
+        /* --------------------- EX stage --------------------- */
+        if (state.EX.nop) {
+            //当前cycle为nop：暂时什么都不做，没有指令需要EX nop然后后面MEM接着操作的
+        } else {
+            if (state.EX.alu_op) {
+                //addu,lw,sw
+                if (state.EX.is_I_type) {
+                    //lw, sw
+                    long res = state.EX.Read_data1.to_ulong() + signextend(state.EX.Imm).to_ulong();
+                    newState.MEM.ALUresult = bitset<32>(res);
+                    //指令是lw,sw说明下一cycle中MEM要激活
+                    newState.MEM.nop = false;
                 } else {
-                    cout << "Rs is not equal to Rt" << endl;
-                    cout << "pc = pc + 4 = " << pc << endl;
+                    //addu
+                    long res = state.EX.Read_data1.to_ulong() + state.EX.Read_data2.to_ulong();
+                    newState.MEM.ALUresult = bitset<32>(res);
+                    //指令是R-type的addu，说明下一cycle中MEM不需要激活
+                    newState.MEM.nop = true;
                 }
-                break;
+            } else {
+                //subu
+                long res = state.EX.Read_data1.to_ulong() - state.EX.Read_data2.to_ulong();
+                newState.MEM.ALUresult = bitset<32>(res);
+                //指令是R-type的subu，说明下一cycle中MEM不需要激活
+                newState.MEM.nop = true;
             }
-            case JUMP: {//jump指令
-                cout << "No." << pc / 4 << " Instruction is Jump" << endl;
-                bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                bitset<26> address(divide(ins.to_string(), 32, 25, 0));
-                cout << "opcode : " << opcode << endl;
-                cout << "address : " << address << endl;
+            newState.MEM.Store_data = state.EX.Read_data2;
+            newState.MEM.Rs = state.EX.Rs;
+            newState.MEM.Rt = state.EX.Rt;
+            newState.MEM.Wrt_reg_addr = state.EX.Wrt_reg_addr;
+            newState.MEM.wrt_enable = state.EX.wrt_enable;
+            newState.MEM.rd_mem = state.EX.rd_mem;
+            newState.MEM.wrt_enable = state.EX.wrt_enable;
+        }
 
-                bitset<32> oldpc(pc);
-                string newpc = "";
-                newpc = oldpc.to_string();
-                newpc = divide(newpc, 32, 31, 28);
-                newpc += address.to_string() + "00";
-                bitset<32> bitpc(newpc);
-                pc = bitpc.to_ulong();
-                break;
-            }
-            case LW: {//lw指令
-                //lw指令解析
-                cout << "No." << pc / 4 << " Instruction is Load" << endl;
-                bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                bitset<16> imm(divide(ins.to_string(), 32, 15, 0));
-                cout << "opcode : " << opcode << endl;
-                cout << "rs : " << rs << endl;
-                cout << "rt : " << rt << endl;
-                cout << "imm : " << imm << endl;
 
-                //RF
-                bitset<5> rd1 = rs;
-                myRF.ReadWrite(rd1, bitset<5>(0), bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                cout << "RF IN : " << rs << endl;
-                cout << "RF OUT : " << myRF.ReadData1 << endl;
-
-                //ALU
-                bitset<3> ALUOP('001');
-                myALU.ALUOperation(ALUOP, myRF.ReadData1, signextend(imm));
-                cout << "ALU IN : " << myRF.ReadData1 << " and " << signextend(imm) << endl;
-                cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                //DataMemory
-                bitset<32> addr = myALU.ALUresult;
-                bitset<1> r(1);
-                myDataMem.MemoryAccess(addr, bitset<32>(0), r, bitset<1>(0));
-                cout << "DM IN : " << addr << endl;
-                cout << "DM OUT : " << myDataMem.readdata << endl;
-
-                //WriteBack
-                bitset<5> writeaddress = rt;
-                bitset<1> writeenable(1);
-                myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myDataMem.readdata, writeenable);
-                break;
-            }
-            case SW: {//sw指令
-                //sw指令解析
-                cout << "No." << pc / 4 << " Instruction is Store" << endl;
-                bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                bitset<16> imm(divide(ins.to_string(), 32, 15, 0));
-                cout << "opcode : " << opcode << endl;
-                cout << "rs : " << rs << endl;
-                cout << "rt : " << rt << endl;
-                cout << "imm : " << imm << endl;
-
-                //RF
-                bitset<5> rd1 = rs;
-                bitset<5> rd2 = rt;
-                myRF.ReadWrite(rd1, rt, bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                cout << "RF IN : " << rs << " and " << rt << endl;
-                cout << "RF OUT : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-
-                //ALU
-                bitset<3> ALUOP('001');
-                myALU.ALUOperation(ALUOP, myRF.ReadData1, signextend(imm));
-                cout << "ALU IN : " << myRF.ReadData1 << " and " << signextend(imm) << endl;
-                cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                //DataMemory
-                bitset<32> addr = myALU.ALUresult;
-                bitset<1> w(1);
-                cout << "DM IN : " << addr << " and " << myRF.ReadData2 << endl;
-                myDataMem.MemoryAccess(addr, myRF.ReadData2, bitset<1>(0), w);
-                break;
-            }
-            case R_Type: {//R-Type
-                //Decoder
-                cout << "No." << pc / 4 << " Instruction is R-type ";
-                switch (bitset<3>(divide(ins.to_string(), 32, 2, 0).c_str()).to_ulong()) {
-                    case ADDU: {
-                        cout << "Addu" << endl;
-                        myALU.ALUOP = bitset<3>("001");
+        /* --------------------- ID stage --------------------- */
+        if (state.ID.nop) {
+            //暂时什么都不做
+        } else {
+            newState.EX.nop = false;
+            bitset<6> opcode(divide(state.ID.Instr.to_string(), 32, 31, 26)); //获取opcode
+            if (opcode.to_ulong() == 0) {
+                //指令为R-type：addu或者subu
+                bitset<5> rs(divide(state.ID.Instr.to_string(), 32, 25, 21));
+                bitset<5> rt(divide(state.ID.Instr.to_string(), 32, 20, 16));
+                bitset<5> rd(divide(state.ID.Instr.to_string(), 32, 15, 11));
+                bitset<5> shamt(divide(state.ID.Instr.to_string(), 32, 10, 6));
+                bitset<6> func(divide(state.ID.Instr.to_string(), 32, 5, 0));
+                newState.EX.Read_data1 = myRF.readRF(rs);
+                newState.EX.Read_data2 = myRF.readRF(rt);
+                newState.EX.is_I_type = false;
+                newState.EX.wrt_enable = true;
+                newState.EX.rd_mem = false;
+                newState.EX.wrt_mem = false;
+                newState.EX.Wrt_reg_addr = rd;
+                newState.EX.Imm = bitset<16>(divide(state.ID.Instr.to_string(), 32, 15, 0));;
+                newState.EX.Rs = rs;
+                newState.EX.Rt = rt;
+                if (bitset<6>(divide(state.ID.Instr.to_string(), 32, 5, 0)) == 33) {
+                    //是addu指令
+                    newState.EX.alu_op = true;
+                } else {
+                    //是subu指令
+                    newState.EX.alu_op = false;
+                }
+            } else {
+                //指令为I-type：lw或sw或beq
+                bitset<5> rs(divide(state.ID.Instr.to_string(), 32, 25, 21));
+                bitset<5> rt(divide(state.ID.Instr.to_string(), 32, 20, 16));
+                bitset<16> imm(divide(state.ID.Instr.to_string(), 32, 15, 0));
+                newState.EX.alu_op = true;
+                newState.EX.Read_data1 = myRF.readRF(rs);
+                newState.EX.Read_data2 = bitset<32>(0);
+                newState.EX.is_I_type = true;
+                newState.EX.Wrt_reg_addr = rt;
+                newState.EX.Imm = imm;
+                newState.EX.Rs = rs;
+                newState.EX.Rt = rt;
+                switch (bitset<6>(divide(state.ID.Instr.to_string(), 32, 31, 26)).to_ulong()) {
+                    case 35: {
+                        //lw
+                        newState.EX.wrt_enable = true;
+                        newState.EX.rd_mem = true;
+                        newState.EX.wrt_mem = false;
                         break;
                     }
-                    case SUBU: {
-                        cout << "Subu" << endl;
-                        myALU.ALUOP = bitset<3>("001");
+                    case 42: {
+                        //sw
+                        newState.EX.wrt_enable = false;
+                        newState.EX.rd_mem = false;
+                        newState.EX.wrt_mem = true;
                         break;
                     }
-                    case AND: {
-                        cout << "And" << endl;
-                        myALU.ALUOP = bitset<3>("001");
-                        break;
-                    }
-                    case OR: {
-                        cout << "Or" << endl;
-                        myALU.ALUOP = bitset<3>("001");
-                        break;
-                    }
-                    case NOR: {
-                        cout << "Nor" << endl;
-                        myALU.ALUOP = bitset<3>("001");
+                    case 4: {
+                        //beq
+                        newState.EX.wrt_enable = false;
+                        newState.EX.rd_mem = false;
+                        newState.EX.wrt_mem = false;
                         break;
                     }
                 }
-                bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                bitset<5> rd(divide(ins.to_string(), 32, 15, 11));
-                bitset<5> shamt(divide(ins.to_string(), 32, 10, 6));
-                bitset<6> func(divide(ins.to_string(), 32, 5, 0));
-                cout << "opcode : " << opcode << endl;
-                cout << "rs : " << rs << endl;
-                cout << "rt : " << rt << endl;
-                cout << "rd : " << rd << endl;
-                cout << "shamt : " << shamt << endl;
-                cout << "func : " << func << endl;
-
-                //RF
-                bitset<5> rd1 = rs;
-                bitset<5> rd2 = rt;
-                myRF.ReadWrite(rd1, rd2, bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                cout << "RF IN : " << rs << " and " << rt << endl;
-                cout << "RF OUT : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-
-                //ALU
-                myALU.ALUOperation(myALU.ALUOP, myRF.ReadData1, myRF.ReadData2);
-                cout << "ALU IN : " << myRF.ReadData1 << " and " << myRF.ReadData2 << endl;
-                cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                //WriteBack
-                bitset<5> writeaddress = rd;
-                bitset<1> writeenable(1);
-                myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
-
-                break;
-            }
-            default: {//I-Type
-                cout << "No." << pc / 4 << " Instruction is I-type ";
-                switch (bitset<3>(divide(ins.to_string(), 32, 28, 26).c_str()).to_ulong()) {
-                    case ADDU: {
-                        cout << "Addiu" << endl;
-                        myALU.ALUOP = bitset<3>("001");
-                        break;
-                    }
-                }
-                bitset<6> opcode(divide(ins.to_string(), 32, 31, 26));
-                bitset<5> rs(divide(ins.to_string(), 32, 25, 21));
-                bitset<5> rt(divide(ins.to_string(), 32, 20, 16));
-                bitset<16> imm(divide(ins.to_string(), 32, 15, 0));
-                cout << "opcode : " << opcode << endl;
-                cout << "rs : " << rs << endl;
-                cout << "rt : " << rt << endl;
-                cout << "imm : " << imm << endl;
-
-                //RF
-                bitset<5> rd1 = rs;
-                myRF.ReadWrite(rd1, bitset<5>(0), bitset<5>(0), bitset<32>(0), bitset<1>(0));
-                cout << "RF IN : " << rs << endl;
-                cout << "RF OUT : " << myRF.ReadData1 << endl;
-
-                //ALU
-                myALU.ALUOperation(myALU.ALUOP, myRF.ReadData1, signextend(imm));
-                cout << "ALU IN : " << myRF.ReadData1 << " and " << signextend(imm) << endl;
-                cout << "ALU OUT : " << myALU.ALUresult << endl;
-
-                //WriteBack
-                bitset<5> writeaddress = rt;
-                bitset<1> writeenable(1);
-                myRF.ReadWrite(bitset<5>(0), bitset<5>(0), writeaddress, myALU.ALUresult, writeenable);
-
-                break;
             }
         }
-        myRF.OutputRF(); // dump RF;    
+
+        /* --------------------- IF stage --------------------- */
+        if (state.IF.nop) {
+            //当前IF是nop
+            newState.IF.nop = true;
+            newState.IF.PC = state.IF.PC;
+            newState.ID.nop = true;
+            newState.ID.Instr = myInsMem.readInstr(state.IF.PC);
+        } else {
+            newState.ID.Instr = myInsMem.readInstr(state.IF.PC);
+            cout << myInsMem.readInstr(state.IF.PC) << endl;
+            if (myInsMem.readInstr(state.IF.PC).to_string() == "11111111111111111111111111111111") {
+                //说明是halt
+                newState.IF.nop = true;
+                newState.ID.nop = true;
+                newState.IF.PC = state.IF.PC;
+            } else {
+                //正常指令
+                newState.IF.nop = false;
+                //newState.IF.PC = bitset<32>(state.IF.PC.to_ulong() + 4); //写在前面了，防止beq更新
+                newState.ID.nop = false;
+            }
+        }
+
+
+        if (state.IF.nop && state.ID.nop && state.EX.nop && state.MEM.nop && state.WB.nop)
+            break;
+
+        printState(newState, cycle); //print states after executing cycle 0, cycle 1, cycle 2 ...
+
+        state = newState; /*The end of the cycle and updates the current state with the values calculated in this cycle */
+
+        cycle += 1;
     }
 
-//    myRF.show();
-//    myDataMem.show();
-
-    myDataMem.OutputDataMem(); // dump data mem
+    myRF.outputRF(); // dump RF;
+    myDataMem.outputDataMem(); // dump data mem
 
     return 0;
-
 }
