@@ -355,11 +355,11 @@ int main() {
             //当前stage不为nop：要进行一些MEM操作
             if (state.MEM.wrt_mem) {
                 //SW：MEM执行写操作（无返回值）
-                //lw-sw依赖（相邻）产生MEM-MEM Forwarding
+                //lw-sw依赖（相邻）产生 MEM-MEM Forwarding
                 if (state.MEM.Rt == state.WB.Wrt_reg_addr and state.WB.wrt_enable) {
                     state.MEM.Store_data = state.WB.Wrt_data;
                 }
-                //subu-sw依赖（相邻）产生MEM-MEM Forwarding
+                //subu/addu-sw依赖（相邻）产生 MEM-MEM Forwarding
                 if (state.MEM.Rt == state.WB.Wrt_reg_addr and state.WB.wrt_enable) {
                     state.MEM.Store_data = state.WB.Wrt_data;
                 }
@@ -372,6 +372,9 @@ int main() {
             } else if (state.MEM.wrt_enable) {
                 //addu或subu
                 newState.WB.Wrt_data = state.MEM.ALUresult;
+            } else {
+                //beq
+                newState.WB.Wrt_data = state.WB.Wrt_data;//保持不变
             }
         }
 
@@ -402,13 +405,21 @@ int main() {
             newState.MEM.nop = state.EX.nop; //与当前nop一致
         } else {
             if (state.EX.alu_op) {
-                //addu,lw,sw
+                //addu,lw,sw, beq
                 if (state.EX.is_I_type) {
                     //lw, sw
                     long res = state.EX.Read_data1.to_ulong() + signextend(state.EX.Imm).to_ulong();
                     newState.MEM.ALUresult = bitset<32>(res);
+                    //addu-sw（间隔一个）产生 WB-MEM Hazard
+                    if(state.EX.wrt_mem and state.EX.Rt == state.EX.Wrt_reg_addr and state.WB.wrt_enable and not state.WB.nop){
+                        state.EX.Read_data2 = state.WB.Wrt_data;//后面再赋值给newState
+                    }
                     //指令是lw,sw说明下一cycle中MEM要激活
                     newState.MEM.nop = state.EX.nop; //与当前nop一致
+                } else if (not state.EX.wrt_enable) {//骚操作：用wrt_enable区分beq和addu
+                    //beq
+                    //newState.MEM.ALUresult = bitset<32>(0); //保持初始化即可
+                    newState.MEM.nop = state.EX.nop;//与当前nop一致
                 } else {
                     //addu
                     //lw-addu依赖（间隔一个）产生MEM-EX Forwarding
@@ -555,16 +566,32 @@ int main() {
                                         newState.IF.PC.to_ulong() + signextend(newState.EX.Imm).to_ulong() * 4);
                             } else {
                                 newState.IF.PC = bitset<32>(
-                                        newState.IF.PC.to_ulong() - (signextend(newState.EX.Imm).flip().to_ulong() + 1) * 5);
+                                        newState.IF.PC.to_ulong() -
+                                        (signextend(newState.EX.Imm).flip().to_ulong() + 1) * 5);
                             }
                         }
                         newState.EX.wrt_enable = false;
                         newState.EX.rd_mem = false;
                         newState.EX.wrt_mem = false;
+                        newState.EX.is_I_type = false;
+
                         break;
                     }
                 }
             }
+        }
+
+        //beq特殊处理
+        if (bitset<6>(divide(state.ID.Instr.to_string(), 32, 31, 26)).to_ulong() == 4 and
+            newState.EX.Read_data1 != newState.EX.Read_data2 and not state.ID.nop) {
+            newState.ID = state.ID;
+            newState.ID.nop = true;
+            if (state.IF.nop && state.ID.nop && state.EX.nop && state.MEM.nop && state.WB.nop)
+                break;
+            printState(newState, cycle); //print states after executing cycle 0, cycle 1, cycle 2 ...
+            state = newState; /*The end of the cycle and updates the current state with the values calculated in this cycle */
+            cycle += 1;
+            continue;
         }
 
         //lw-addu（相邻）产生hazard，使用stall + MEM-EX Forwarding
