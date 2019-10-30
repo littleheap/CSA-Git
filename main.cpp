@@ -23,7 +23,7 @@ bitset<32> signextend(bitset<16> imm) {
     if (buf[0] == '0') {
         return bitset<32>(imm.to_string());
     } else {
-        //负数没有实现
+        return bitset<32>(bitset<32>(imm.flip().to_ulong() + 1).flip().to_ulong() + 1);
     }
 }
 
@@ -323,6 +323,7 @@ int main() {
     while (1) {
 
         stateStruct newState;
+        stateStruct savestate;
 
         newState.IF.PC = bitset<32>(state.IF.PC.to_ulong() + 4);
 
@@ -339,6 +340,8 @@ int main() {
         }
 
         /* --------------------- MEM stage --------------------- */
+
+        savestate.MEM = state.MEM;
         if (state.MEM.nop) {
             //当前cycle为nop：主要任务就是继续将前面EX传来的信息传给WB
             newState.WB.Wrt_data = state.WB.Wrt_data;
@@ -352,6 +355,15 @@ int main() {
             //当前stage不为nop：要进行一些MEM操作
             if (state.MEM.wrt_mem) {
                 //SW：MEM执行写操作（无返回值）
+                //lw-sw依赖（相邻）产生MEM-MEM Forwarding
+                if (state.MEM.Rt == state.WB.Wrt_reg_addr and state.WB.wrt_enable) {
+                    state.MEM.Store_data = state.WB.Wrt_data;
+                }
+                //subu-sw依赖（相邻）产生MEM-MEM Forwarding
+                if (state.MEM.Rt == state.WB.Wrt_reg_addr and state.WB.wrt_enable) {
+                    state.MEM.Store_data = state.WB.Wrt_data;
+                }
+
                 myDataMem.writeDataMem(state.MEM.ALUresult, state.MEM.Store_data);
                 newState.WB.Wrt_data = myDataMem.readDataMem(state.MEM.ALUresult);
             } else if (state.MEM.rd_mem) {
@@ -375,16 +387,18 @@ int main() {
             newState.WB.nop = state.MEM.nop;//与当前nop一致
         }
 
+
         /* --------------------- EX stage --------------------- */
+        savestate.EX = state.EX;
         if (state.EX.nop) {
-            newState.MEM.ALUresult = state.MEM.ALUresult;
-            newState.MEM.Store_data = state.MEM.Store_data;
-            newState.MEM.Rs = state.MEM.Rs;
-            newState.MEM.Rt = state.MEM.Rt;
-            newState.MEM.Wrt_reg_addr = state.MEM.Wrt_reg_addr;
-            newState.MEM.wrt_enable = state.MEM.wrt_enable;
-            newState.MEM.rd_mem = state.MEM.rd_mem;
-            newState.MEM.wrt_mem = state.MEM.wrt_mem;
+            newState.MEM.ALUresult = savestate.MEM.ALUresult;
+            newState.MEM.Store_data = savestate.MEM.Store_data;
+            newState.MEM.Rs = savestate.MEM.Rs;
+            newState.MEM.Rt = savestate.MEM.Rt;
+            newState.MEM.Wrt_reg_addr = savestate.MEM.Wrt_reg_addr;
+            newState.MEM.wrt_enable = savestate.MEM.wrt_enable;
+            newState.MEM.rd_mem = savestate.MEM.rd_mem;
+            newState.MEM.wrt_mem = savestate.MEM.wrt_mem;
             newState.MEM.nop = state.EX.nop; //与当前nop一致
         } else {
             if (state.EX.alu_op) {
@@ -397,16 +411,59 @@ int main() {
                     newState.MEM.nop = state.EX.nop; //与当前nop一致
                 } else {
                     //addu
+                    //lw-addu依赖（间隔一个）产生MEM-EX Forwarding
+                    if (state.EX.Rs == state.WB.Wrt_reg_addr and state.WB.wrt_enable and not state.WB.nop) {
+                        //EX的Rs与WB的WB_data产生harzard
+                        state.EX.Read_data1 = state.WB.Wrt_data;
+                    }
+                    if (state.EX.Rt == state.WB.Wrt_reg_addr and state.WB.wrt_enable and not state.WB.nop) {
+                        //EX的Rt与WB的WB_data产生harzard
+                        state.EX.Read_data2 = state.WB.Wrt_data;
+                    }
+
+                    //addu-subu依赖（相邻）产生EX-EX Forwarding
+                    if (state.EX.Rs == state.MEM.Wrt_reg_addr and state.MEM.wrt_enable and not state.MEM.nop) {
+                        //EX的Rs与MEM的ALUresult产生harzard
+                        state.EX.Read_data1 = state.MEM.ALUresult;
+                    }
+                    if (state.EX.Rt == state.MEM.Wrt_reg_addr and state.MEM.wrt_enable and not state.MEM.nop) {
+                        //EX的Rt与MEM的ALUresult产生harzard
+                        state.EX.Read_data2 = state.MEM.ALUresult;
+                    }
+
+                    //addu
                     long res = state.EX.Read_data1.to_ulong() + state.EX.Read_data2.to_ulong();
                     newState.MEM.ALUresult = bitset<32>(res);
+
                     //指令是R-type的addu，说明下一cycle中MEM不需要激活
                     newState.MEM.nop = state.EX.nop; //与当前nop一致
                 }
             } else {
                 //subu
+                //lw-addu依赖（间隔一个）产生MEM-EX Forwarding
+                if (state.EX.Rs == state.WB.Wrt_reg_addr and state.WB.wrt_enable and not state.WB.nop) {
+                    //EX的Rs与WB的WB_data产生harzard
+                    state.EX.Read_data1 = state.WB.Wrt_data;
+                }
+                if (state.EX.Rt == state.WB.Wrt_reg_addr and state.WB.wrt_enable and not state.WB.nop) {
+                    //EX的Rt与WB的WB_data产生harzard
+                    state.EX.Read_data2 = state.WB.Wrt_data;
+                }
+
+                //addu-subu依赖（相邻）产生EX-EX Forwarding
+                if (state.EX.Rs == state.MEM.Wrt_reg_addr and state.MEM.wrt_enable and not state.MEM.nop) {
+                    //EX的Rs与MEM的ALUresult产生harzard
+                    state.EX.Read_data1 = state.MEM.ALUresult;
+                }
+                if (state.EX.Rt == state.MEM.Wrt_reg_addr and state.MEM.wrt_enable and not state.MEM.nop) {
+                    //EX的Rt与MEM的ALUresult产生harzard
+                    state.EX.Read_data2 = state.MEM.ALUresult;
+                }
+
                 long res = state.EX.Read_data1.to_ulong() - state.EX.Read_data2.to_ulong();
                 newState.MEM.ALUresult = bitset<32>(res);
-                //指令是R-type的subu，说明下一cycle中MEM不需要激活
+
+                //指令是R-type的addu，说明下一cycle中MEM不需要激活
                 newState.MEM.nop = state.EX.nop; //与当前nop一致
             }
             newState.MEM.Store_data = state.EX.Read_data2;
@@ -421,18 +478,18 @@ int main() {
 
         /* --------------------- ID stage --------------------- */
         if (state.ID.nop) {
-            newState.EX.nop = state.ID.nop;
-            newState.EX.Read_data1 = state.EX.Read_data1;
-            newState.EX.Read_data2 = state.EX.Read_data2;
-            newState.EX.is_I_type = state.EX.is_I_type;
-            newState.EX.wrt_enable = state.EX.wrt_enable;
-            newState.EX.rd_mem = state.EX.rd_mem;
-            newState.EX.wrt_mem = state.EX.wrt_mem;
-            newState.EX.Wrt_reg_addr = state.EX.Wrt_reg_addr;
-            newState.EX.Imm = state.EX.Imm;
-            newState.EX.Rs = state.EX.Rs;
-            newState.EX.Rt = state.EX.Rt;
-            newState.EX.alu_op = state.EX.alu_op;
+            newState.EX.nop = state.ID.nop; //保持一致
+            newState.EX.Read_data1 = savestate.EX.Read_data1;
+            newState.EX.Read_data2 = savestate.EX.Read_data2;
+            newState.EX.is_I_type = savestate.EX.is_I_type;
+            newState.EX.wrt_enable = savestate.EX.wrt_enable;
+            newState.EX.rd_mem = savestate.EX.rd_mem;
+            newState.EX.wrt_mem = savestate.EX.wrt_mem;
+            newState.EX.Wrt_reg_addr = savestate.EX.Wrt_reg_addr;
+            newState.EX.Imm = savestate.EX.Imm;
+            newState.EX.Rs = savestate.EX.Rs;
+            newState.EX.Rt = savestate.EX.Rt;
+            newState.EX.alu_op = savestate.EX.alu_op;
         } else {
             newState.EX.nop = state.ID.nop; // 保持一致
             bitset<6> opcode(divide(state.ID.Instr.to_string(), 32, 31, 26)); //获取opcode
@@ -490,6 +547,17 @@ int main() {
                     }
                     case 4: {
                         //beq
+                        if (newState.EX.Read_data1 != newState.EX.Read_data2) { //#######????????
+                            char buf[32];
+                            strcpy(buf, signextend(newState.EX.Imm).to_string().c_str());
+                            if (buf[0] == '0') {
+                                newState.IF.PC = bitset<32>(
+                                        newState.IF.PC.to_ulong() + signextend(newState.EX.Imm).to_ulong() * 4);
+                            } else {
+                                newState.IF.PC = bitset<32>(
+                                        newState.IF.PC.to_ulong() - (signextend(newState.EX.Imm).flip().to_ulong() + 1) * 5);
+                            }
+                        }
                         newState.EX.wrt_enable = false;
                         newState.EX.rd_mem = false;
                         newState.EX.wrt_mem = false;
@@ -497,6 +565,34 @@ int main() {
                     }
                 }
             }
+        }
+
+        //lw-addu（相邻）产生hazard，使用stall + MEM-EX Forwarding
+        if (newState.EX.Rs == newState.MEM.Rs and newState.MEM.wrt_enable and not newState.MEM.nop and
+            newState.EX.Rs != bitset<5>(0)) {
+            newState.EX.nop = true;
+            newState.ID = state.ID;
+            newState.IF = state.IF;
+            newState.IF.PC = bitset<32>(state.IF.PC.to_ulong());
+            if (state.IF.nop && state.ID.nop && state.EX.nop && state.MEM.nop && state.WB.nop)
+                break;
+            printState(newState, cycle); //print states after executing cycle 0, cycle 1, cycle 2 ...
+            state = newState; /*The end of the cycle and updates the current state with the values calculated in this cycle */
+            cycle += 1;
+            continue;
+        }
+        if (newState.EX.Rt == newState.MEM.Rt and newState.MEM.wrt_enable and not newState.MEM.nop and
+            newState.EX.Rs != bitset<5>(0)) {
+            newState.EX.nop = true;
+            newState.ID = state.ID;
+            newState.IF = state.IF;
+            newState.IF.PC = bitset<32>(state.IF.PC.to_ulong());
+            if (state.IF.nop && state.ID.nop && state.EX.nop && state.MEM.nop && state.WB.nop)
+                break;
+            printState(newState, cycle); //print states after executing cycle 0, cycle 1, cycle 2 ...
+            state = newState; /*The end of the cycle and updates the current state with the values calculated in this cycle */
+            cycle += 1;
+            continue;
         }
 
         /* --------------------- IF stage --------------------- */
