@@ -411,7 +411,8 @@ int main() {
                     long res = state.EX.Read_data1.to_ulong() + signextend(state.EX.Imm).to_ulong();
                     newState.MEM.ALUresult = bitset<32>(res);
                     //addu-sw（间隔一个）产生 WB-MEM Hazard
-                    if(state.EX.wrt_mem and state.EX.Rt == state.EX.Wrt_reg_addr and state.WB.wrt_enable and not state.WB.nop){
+                    if (state.EX.wrt_mem and state.EX.Rt == state.WB.Wrt_reg_addr and state.WB.wrt_enable and
+                        not state.WB.nop) {//有改EX->WB
                         state.EX.Read_data2 = state.WB.Wrt_data;//后面再赋值给newState
                     }
                     //指令是lw,sw说明下一cycle中MEM要激活
@@ -574,7 +575,6 @@ int main() {
                         newState.EX.rd_mem = false;
                         newState.EX.wrt_mem = false;
                         newState.EX.is_I_type = false;
-
                         break;
                     }
                 }
@@ -595,8 +595,8 @@ int main() {
         }
 
         //lw-addu（相邻）产生hazard，使用stall + MEM-EX Forwarding
-        if (newState.EX.Rs == newState.MEM.Rs and newState.MEM.wrt_enable and not newState.MEM.nop and
-            newState.EX.Rs != bitset<5>(0)) {
+        if (newState.EX.Rs == newState.MEM.Wrt_reg_addr and newState.MEM.wrt_enable and not newState.MEM.nop and
+            newState.EX.Rs != bitset<5>(0) and newState.EX.is_I_type) { // RS -> Wrt_reg_addr
             newState.EX.nop = true;
             newState.ID = state.ID;
             newState.IF = state.IF;
@@ -608,8 +608,8 @@ int main() {
             cycle += 1;
             continue;
         }
-        if (newState.EX.Rt == newState.MEM.Rt and newState.MEM.wrt_enable and not newState.MEM.nop and
-            newState.EX.Rs != bitset<5>(0)) {
+        if (newState.EX.Rt == newState.MEM.Wrt_reg_addr and newState.MEM.wrt_enable and not newState.MEM.nop and
+            newState.EX.Rt != bitset<5>(0) and not newState.EX.is_I_type) {
             newState.EX.nop = true;
             newState.ID = state.ID;
             newState.IF = state.IF;
