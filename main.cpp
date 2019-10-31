@@ -423,6 +423,7 @@ int main() {
                     newState.MEM.nop = state.EX.nop;//与当前nop一致
                 } else {
                     //addu
+
                     //lw-addu依赖（间隔一个）产生MEM-EX Forwarding
                     if (state.EX.Rs == state.WB.Wrt_reg_addr and state.WB.wrt_enable and not state.WB.nop) {
                         //EX的Rs与WB的WB_data产生harzard
