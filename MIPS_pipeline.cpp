@@ -171,22 +171,22 @@ public:
         ifstream imem;
         string line;
         int i = 0;
-        imem.open("../imem.txt");
+        imem.open("./imem.txt");
         if (imem.is_open()) {
             while (getline(imem, line)) {
                 IMem[i] = bitset<8>(line);
                 i++;
             }
             //打印读取的InstructionMemory数据
-            cout << "-------------------" << endl;
-            cout << "Initial InstructionMemory :" << endl;
-            for (int p = 0; p < i; p++) {
-                cout << IMem[p] << endl;
-                if (p > 0 && p != i - 1 && (p + 1) % 4 == 0) {
-                    cout << "" << endl;
-                }
-            }
-            cout << "-------------------" << endl;
+//            cout << "-------------------" << endl;
+//            cout << "Initial InstructionMemory :" << endl;
+//            for (int p = 0; p < i; p++) {
+//                cout << IMem[p] << endl;
+//                if (p > 0 && p != i - 1 && (p + 1) % 4 == 0) {
+//                    cout << "" << endl;
+//                }
+//            }
+//            cout << "-------------------" << endl;
         } else cout << "Unable to open INSMem file";
         imem.close();
     }
@@ -214,22 +214,22 @@ public:
         ifstream dmem;
         string line;
         int i = 0;
-        dmem.open("../dmem.txt");
+        dmem.open("./dmem.txt");
         if (dmem.is_open()) {
             while (getline(dmem, line)) {
                 DMem[i] = bitset<8>(line);
                 i++;
             }
             //打印读取的DataMemory数据
-            cout << "-------------------" << endl;
-            cout << "Initial DataMemory :" << endl;
-            for (int p = 0; p < i; p++) {
-                cout << DMem[p] << endl;
-                if (p > 0 && p != i - 1 && (p + 1) % 4 == 0) {
-                    cout << "" << endl;
-                }
-            }
-            cout << "-------------------" << endl;
+//            cout << "-------------------" << endl;
+//            cout << "Initial DataMemory :" << endl;
+//            for (int p = 0; p < i; p++) {
+//                cout << DMem[p] << endl;
+//                if (p > 0 && p != i - 1 && (p + 1) % 4 == 0) {
+//                    cout << "" << endl;
+//                }
+//            }
+//            cout << "-------------------" << endl;
         } else cout << "Unable to open DataMem file";
         dmem.close();
     }
@@ -383,7 +383,13 @@ int main() {
         newState.WB.Rt = state.MEM.Rt;
         newState.WB.Wrt_reg_addr = state.MEM.Wrt_reg_addr;
         newState.WB.wrt_enable = state.MEM.wrt_enable;
-        newState.WB.nop = state.MEM.nop;//与当前nop一致
+        if (state.MEM.wrt_enable == true) {
+            //说明下一个cycle的WB要写回
+            newState.WB.nop = state.MEM.nop;//与当前nop一致
+        } else {
+            //说明下一个cycle的WB不需要写回
+            newState.WB.nop = state.MEM.nop;//与当前nop一致
+        }
 
 
         /* --------------------- EX stage --------------------- */
@@ -418,8 +424,6 @@ int main() {
                     newState.MEM.nop = state.EX.nop;//与当前nop一致
                 } else {
                     //addu
-
-                    state.
 
                     //lw-addu依赖（间隔一个）产生MEM-EX Forwarding
                     if (state.EX.Rs == state.WB.Wrt_reg_addr and state.WB.wrt_enable and not state.WB.nop) {
