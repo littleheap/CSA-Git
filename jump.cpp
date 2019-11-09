@@ -87,7 +87,7 @@ public:
 
     void outputRF() {
         ofstream rfout;
-        rfout.open("RFresult.txt", std::ios_base::app);
+        rfout.open("RFresult_grading.txt", std::ios_base::app);
         if (rfout.is_open()) {
             rfout << "State of RF:\t" << endl;
             for (int j = 0; j < 32; j++) {
@@ -110,10 +110,10 @@ public:
         ifstream imem;
         string line;
         int i = 0;
-        imem.open("../imem.txt");
+        imem.open("../imem.txt"); //修改路径！！！！！
         if (imem.is_open()) {
             while (getline(imem, line)) {
-                IMem[i] = bitset<8>(line.substr(0, 8));
+                IMem[i] = bitset<8>(line);
                 i++;
             }
         } else cout << "Unable to open file";
@@ -143,10 +143,10 @@ public:
         ifstream dmem;
         string line;
         int i = 0;
-        dmem.open("../dmem.txt");
+        dmem.open("../dmem.txt");//修改路径！！！！！
         if (dmem.is_open()) {
             while (getline(dmem, line)) {
-                DMem[i] = bitset<8>(line.substr(0, 8));
+                DMem[i] = bitset<8>(line);
                 i++;
             }
         } else cout << "Unable to open file";
@@ -172,7 +172,7 @@ public:
 
     void outputDataMem() {
         ofstream dmemout;
-        dmemout.open("dmemresult.txt");
+        dmemout.open("dmemresult_grading.txt");
         if (dmemout.is_open()) {
             for (int j = 0; j < 1000; j++) {
                 dmemout << DMem[j] << endl;
@@ -188,7 +188,7 @@ private:
 
 void printState(stateStruct state, int cycle) {
     ofstream printstate;
-    printstate.open("stateresult.txt", std::ios_base::app);
+    printstate.open("stateresult_grading.txt", std::ios_base::app);
     if (printstate.is_open()) {
         printstate << "State after executing cycle:\t" << cycle << endl;
 
@@ -460,11 +460,6 @@ int main() {
 
     int cycle = 0;
 
-    // int divided by int gives int only. Since float is needed, all variables are defined as floats.
-    float validInstructions = 0;
-    float IPC = 0.0;
-    float dmemRequests = 0;
-    float dmemUtil = 0.0;
 
     while (1) {
 
@@ -473,18 +468,16 @@ int main() {
             if (1 == state.WB.wrt_enable) {
                 myRF.writeRF(state.WB.Wrt_reg_addr, state.WB.Wrt_data);
             }
-
-            // Every valid instructiion has nop bit 0 in WB stage, regardless of whether it writes back anything or not
-            validInstructions++;
         }
 
 
         /* --------------------- MEM stage --------------------- */
         if (0 == state.MEM.nop) {
             if (1 == state.MEM.rd_mem) {
+                //LW
                 newState.WB.Wrt_data = myDataMem.readDataMem(state.MEM.ALUresult);
-                dmemRequests++;     // lw Data Memory Access
             } else if (1 == state.MEM.wrt_mem) {
+                //SW
                 if ((0 == state.WB.nop) && (1 == state.WB.wrt_enable) && (state.WB.Wrt_reg_addr == state.MEM.Rt)) {
                     state.MEM.Store_data = state.WB.Wrt_data;
                     cout << "MEM-MEM sw Forwarding" << endl;
@@ -492,8 +485,8 @@ int main() {
 
                 myDataMem.writeDataMem(state.MEM.ALUresult, state.MEM.Store_data);
                 newState.WB.Wrt_data = state.MEM.Store_data;    //will not be used
-                dmemRequests++;     // sw Data Memory Access
             } else if (1 == state.MEM.wrt_enable) {
+                //ADDU SUBU
                 //cout<<"addu subu ALUresult:\t"<<state.MEM.ALUresult<<endl;
                 newState.WB.Wrt_data = state.MEM.ALUresult;
             }
@@ -509,11 +502,12 @@ int main() {
 
         /* --------------------- EX stage --------------------- */
         if (0 == state.EX.nop) {
+            //MEM-EX Rs Forwarding
             if ((0 == state.WB.nop) && (1 == state.WB.wrt_enable) && (state.WB.Wrt_reg_addr == state.EX.Rs)) {
                 state.EX.Read_data1 = state.WB.Wrt_data;
                 cout << "MEM-EX Rs Forwarding" << endl;
             }
-
+            //MEM-EX Rt Forwarding (Rt的判定条件相对较多)
             if ((0 == state.WB.nop) && (1 == state.WB.wrt_enable) && (state.WB.Wrt_reg_addr == state.EX.Rt)) {
                 if (((0 == state.EX.is_I_type) && (1 == state.EX.wrt_enable)) ||
                     (1 == state.EX.wrt_mem))   //addu, subu, sw
@@ -522,13 +516,13 @@ int main() {
                     cout << "MEM-EX Rt Forwarding" << endl;
                 }
             }
-
+            //EX-EX Rs Forwarding
             if ((0 == state.MEM.nop) && (0 == state.MEM.rd_mem) && (0 == state.MEM.wrt_mem) &&
                 (1 == state.MEM.wrt_enable) && (state.MEM.Wrt_reg_addr == state.EX.Rs)) {
                 state.EX.Read_data1 = state.MEM.ALUresult;
                 cout << "EX-EX Rs Forwarding" << endl;
             }
-
+            //EX-EX Rt Forwarding (Rt的判定条件相对较多)
             if ((0 == state.MEM.nop) && (0 == state.MEM.rd_mem) && (0 == state.MEM.wrt_mem) &&
                 (1 == state.MEM.wrt_enable) && (state.MEM.Wrt_reg_addr == state.EX.Rt)) {
                 if ((0 == state.EX.is_I_type) && (1 ==
@@ -572,7 +566,6 @@ int main() {
 
 
         /* --------------------- ID stage --------------------- */
-
         if (0 == state.ID.nop) {
             Instr = state.ID.Instr;
             opcode = Instr.to_string().substr(0, 6);        //decode instruction
@@ -736,19 +729,6 @@ int main() {
 
     myRF.outputRF(); // dump RF;
     myDataMem.outputDataMem(); // dump data mem
-
-
-    // Print IPC and DMEM Utilization related data
-    cout << "Valid Instructions: " << validInstructions << " , Clock Cycles: " << cycle << " , Data Memory Requests: "
-         << dmemRequests << endl;
-
-    IPC = validInstructions / cycle;
-    dmemUtil = dmemRequests / validInstructions;
-
-    // setprecision(3) means print 3 digits after decimal point
-    // NOTE: if float values of IPC and utilization are not correctly shown, use #include<iomanip> in the header
-    cout << "IPC : " << setprecision(3) << IPC << endl;
-    cout << "Data Memory Utilization : " << setprecision(3) << dmemUtil << endl;
 
     return 0;
 }
