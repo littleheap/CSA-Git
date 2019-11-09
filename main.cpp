@@ -7,6 +7,7 @@
 using namespace std;
 #define MemSize 1000 // memory size, in reality, the memory size should be 2^32, but for this lab, for the space resaon, we keep it as this large number, but the memory is still 32-bit addressable.
 
+//jump
 struct IFStruct {
     bitset<32> PC;
     bool nop;
@@ -87,7 +88,7 @@ public:
 
     void outputRF() {
         ofstream rfout;
-        rfout.open("RFresult.txt", std::ios_base::app);
+        rfout.open("RFresult_grading.txt", std::ios_base::app);
         if (rfout.is_open()) {
             rfout << "State of RF:\t" << endl;
             for (int j = 0; j < 32; j++) {
@@ -110,10 +111,10 @@ public:
         ifstream imem;
         string line;
         int i = 0;
-        imem.open("../imem.txt");
+        imem.open("../imem.txt"); //修改路径！！！！！
         if (imem.is_open()) {
             while (getline(imem, line)) {
-                IMem[i] = bitset<8>(line.substr(0, 8));
+                IMem[i] = bitset<8>(line);
                 i++;
             }
         } else cout << "Unable to open file";
@@ -143,10 +144,10 @@ public:
         ifstream dmem;
         string line;
         int i = 0;
-        dmem.open("../dmem.txt");
+        dmem.open("../dmem.txt");//修改路径！！！！！
         if (dmem.is_open()) {
             while (getline(dmem, line)) {
-                DMem[i] = bitset<8>(line.substr(0, 8));
+                DMem[i] = bitset<8>(line);
                 i++;
             }
         } else cout << "Unable to open file";
@@ -172,7 +173,7 @@ public:
 
     void outputDataMem() {
         ofstream dmemout;
-        dmemout.open("dmemresult.txt");
+        dmemout.open("dmemresult_grading.txt");
         if (dmemout.is_open()) {
             for (int j = 0; j < 1000; j++) {
                 dmemout << DMem[j] << endl;
@@ -188,7 +189,7 @@ private:
 
 void printState(stateStruct state, int cycle) {
     ofstream printstate;
-    printstate.open("stateresult.txt", std::ios_base::app);
+    printstate.open("stateresult_grading.txt", std::ios_base::app);
     if (printstate.is_open()) {
         printstate << "State after executing cycle:\t" << cycle << endl;
 
@@ -381,7 +382,6 @@ bitset<32> sign_extend(bitset<16> Imm) {
     return se_imm;
 }
 
-
 int main() {
     RF myRF;
     INSMem myInsMem;
@@ -460,11 +460,8 @@ int main() {
 
     int cycle = 0;
 
-    // int divided by int gives int only. Since float is needed, all variables are defined as floats.
-    float validInstructions = 0;
-    float IPC = 0.0;
-    float dmemRequests = 0;
-    float dmemUtil = 0.0;
+    float branch_num = 0;
+    float branch_taken = 0;
 
     while (1) {
 
@@ -473,18 +470,16 @@ int main() {
             if (1 == state.WB.wrt_enable) {
                 myRF.writeRF(state.WB.Wrt_reg_addr, state.WB.Wrt_data);
             }
-
-            // Every valid instructiion has nop bit 0 in WB stage, regardless of whether it writes back anything or not
-            validInstructions++;
         }
 
 
         /* --------------------- MEM stage --------------------- */
         if (0 == state.MEM.nop) {
             if (1 == state.MEM.rd_mem) {
+                //LW
                 newState.WB.Wrt_data = myDataMem.readDataMem(state.MEM.ALUresult);
-                dmemRequests++;     // lw Data Memory Access
             } else if (1 == state.MEM.wrt_mem) {
+                //SW
                 if ((0 == state.WB.nop) && (1 == state.WB.wrt_enable) && (state.WB.Wrt_reg_addr == state.MEM.Rt)) {
                     state.MEM.Store_data = state.WB.Wrt_data;
                     cout << "MEM-MEM sw Forwarding" << endl;
@@ -492,8 +487,8 @@ int main() {
 
                 myDataMem.writeDataMem(state.MEM.ALUresult, state.MEM.Store_data);
                 newState.WB.Wrt_data = state.MEM.Store_data;    //will not be used
-                dmemRequests++;     // sw Data Memory Access
             } else if (1 == state.MEM.wrt_enable) {
+                //ADDU SUBU
                 //cout<<"addu subu ALUresult:\t"<<state.MEM.ALUresult<<endl;
                 newState.WB.Wrt_data = state.MEM.ALUresult;
             }
@@ -509,11 +504,12 @@ int main() {
 
         /* --------------------- EX stage --------------------- */
         if (0 == state.EX.nop) {
+            //MEM-EX Rs Forwarding
             if ((0 == state.WB.nop) && (1 == state.WB.wrt_enable) && (state.WB.Wrt_reg_addr == state.EX.Rs)) {
                 state.EX.Read_data1 = state.WB.Wrt_data;
                 cout << "MEM-EX Rs Forwarding" << endl;
             }
-
+            //MEM-EX Rt Forwarding (Rt的判定条件相对较多)
             if ((0 == state.WB.nop) && (1 == state.WB.wrt_enable) && (state.WB.Wrt_reg_addr == state.EX.Rt)) {
                 if (((0 == state.EX.is_I_type) && (1 == state.EX.wrt_enable)) ||
                     (1 == state.EX.wrt_mem))   //addu, subu, sw
@@ -522,13 +518,13 @@ int main() {
                     cout << "MEM-EX Rt Forwarding" << endl;
                 }
             }
-
+            //EX-EX Rs Forwarding
             if ((0 == state.MEM.nop) && (0 == state.MEM.rd_mem) && (0 == state.MEM.wrt_mem) &&
                 (1 == state.MEM.wrt_enable) && (state.MEM.Wrt_reg_addr == state.EX.Rs)) {
                 state.EX.Read_data1 = state.MEM.ALUresult;
                 cout << "EX-EX Rs Forwarding" << endl;
             }
-
+            //EX-EX Rt Forwarding (Rt的判定条件相对较多)
             if ((0 == state.MEM.nop) && (0 == state.MEM.rd_mem) && (0 == state.MEM.wrt_mem) &&
                 (1 == state.MEM.wrt_enable) && (state.MEM.Wrt_reg_addr == state.EX.Rt)) {
                 if ((0 == state.EX.is_I_type) && (1 ==
@@ -572,7 +568,6 @@ int main() {
 
 
         /* --------------------- ID stage --------------------- */
-
         if (0 == state.ID.nop) {
             Instr = state.ID.Instr;
             opcode = Instr.to_string().substr(0, 6);        //decode instruction
@@ -608,13 +603,25 @@ int main() {
                 state = newState;
                 cycle++;
                 continue;
-
-            } else if (opcode == "000000")                                //execution
+            } else if (opcode == "000000")//R-type
             {
+                if (func == "001000")//jr！！！！！！！！！！！！！！！！！！！
+                {
+                    string rs = Instr.to_string().substr(6, 5);
+                    bitset<5> address(rs);
+                    bitset<32> target = myRF.readRF(address);
+                    newState.IF.PC = target;
+                    newState.ID.nop = true;
+                    newState.IF.nop = false;
+                    newState.EX.rd_mem = 0;
+                    newState.EX.wrt_enable = 0;
+                    printState(newState, cycle);
+                    state = newState;
+                    cycle++;
+                    continue;
+                }
                 newState.EX.Wrt_reg_addr = Rd;
-
                 newState.EX.is_I_type = 0;
-
                 if (func == "100001")            //addu
                 {
                     newState.EX.INS = "addu";
@@ -624,16 +631,13 @@ int main() {
                     newState.EX.INS = "subu";
                     newState.EX.alu_op = 0;
                 }
-
                 newState.EX.wrt_enable = 1;
                 newState.EX.rd_mem = 0;
                 newState.EX.wrt_mem = 0;
             } else if (opcode == "100011")    //Load Word R[rt] = M[R[rs]+SignExtImm]
             {
                 newState.EX.INS = "lw";
-
                 newState.EX.Wrt_reg_addr = Rt;
-
                 newState.EX.is_I_type = 1;
                 newState.EX.alu_op = 1;
                 newState.EX.wrt_enable = 1;
@@ -642,9 +646,7 @@ int main() {
             } else if (opcode == "101011")    //Store Word M[R[rs]+SignExtImm] = R[rt]
             {
                 newState.EX.INS = "sw";
-
                 newState.EX.Wrt_reg_addr = Rt;  //will not be used
-
                 newState.EX.is_I_type = 1;
                 newState.EX.alu_op = 1;
                 newState.EX.wrt_enable = 0;
@@ -652,45 +654,62 @@ int main() {
                 newState.EX.wrt_mem = 1;
             } else if (opcode == "000100")    //Branch On Equal if(R[rs]==R[rt]) PC=PC+4+BrachAddr
             {
+                //添加的代码！！！！！！！！！！！！！
+                if ((0 == state.EX.nop) && (0 == state.EX.rd_mem) && (0 == state.EX.wrt_mem) &&
+                    (1 == state.EX.wrt_enable)) {
+                    //beq stall
+                    if ((state.EX.Wrt_reg_addr == Rs) || (state.EX.Wrt_reg_addr == Rt))  //stall
+                    {
+                        newState.EX.nop = 1;
+                        newState.ID = state.ID;
+                        newState.IF = state.IF;
+                        printState(newState, cycle);
+                        state = newState;
+                        cycle++;
+                        cout << "Stall" << endl;
+                        continue;
+                    }
+                }
+                //beq
+                branch_num += 1;//!!!!!!!!!!!!!!!!!!
                 newState.EX.INS = "beq";
-
                 newState.EX.Wrt_reg_addr = 0;
-
                 newState.EX.is_I_type = 1;
                 newState.EX.alu_op = 1;
                 newState.EX.wrt_enable = 0;
                 newState.EX.rd_mem = 0;
                 newState.EX.wrt_mem = 0;
 
-                if (myRF.readRF(Rs) != myRF.readRF(Rt)) {
+                bitset<32> a = myRF.readRF(Rs);
+                bitset<32> b = myRF.readRF(Rt);
+                if (Rs == state.MEM.Wrt_reg_addr && state.MEM.wrt_enable){
+                    a = state.MEM.ALUresult;
+                }
+                if (Rt == state.MEM.Wrt_reg_addr && state.MEM.wrt_enable){
+                    b = state.MEM.ALUresult;
+                }
+                if (a != b) {
                     cout << "Branch not taken" << endl;
+                    branch_taken += 1;//!!!!!!!!!!!!!!!!!!
                     newState.EX.nop = 0;
                     newState.ID.nop = 1;
-
                     newState.IF.PC = state.IF.PC.to_ulong() +
                                      bitset<30>(sign_extend(Imm).to_string().substr(2, 30)).to_ulong() * 4;
                     newState.IF.nop = 0;
-
                     printState(newState, cycle);
                     state = newState;
                     cycle++;
-
                     continue;
                 }
-
                 cout << "Branch taken" << endl;
             }
-
-            if ((0 == state.EX.nop) && (1 == state.EX.rd_mem))    //stall, will not consider branch after lw
-            {
+            if ((0 == state.EX.nop) && (1 == state.EX.rd_mem)) {   //stall, will not consider branch after lw
                 if ((state.EX.Wrt_reg_addr == Rs) ||
                     ((state.EX.Wrt_reg_addr == Rt) && (0 == newState.EX.is_I_type)))  //stall
                 {
                     newState.EX.nop = 1;
-
                     newState.ID = state.ID;
                     newState.IF = state.IF;
-
                     printState(newState, cycle);
                     state = newState;
                     cycle++;
@@ -736,19 +755,7 @@ int main() {
 
     myRF.outputRF(); // dump RF;
     myDataMem.outputDataMem(); // dump data mem
-
-
-    // Print IPC and DMEM Utilization related data
-    cout << "Valid Instructions: " << validInstructions << " , Clock Cycles: " << cycle << " , Data Memory Requests: "
-         << dmemRequests << endl;
-
-    IPC = validInstructions / cycle;
-    dmemUtil = dmemRequests / validInstructions;
-
-    // setprecision(3) means print 3 digits after decimal point
-    // NOTE: if float values of IPC and utilization are not correctly shown, use #include<iomanip> in the header
-    cout << "IPC : " << setprecision(3) << IPC << endl;
-    cout << "Data Memory Utilization : " << setprecision(3) << dmemUtil << endl;
+    cout << branch_taken / branch_num << endl;
 
     return 0;
 }
