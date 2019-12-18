@@ -23,9 +23,7 @@
     <option name="FILTER_BY_CURRENT_PROJECT" value="true" />
   </component>
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
-    <generated>
-      <config projectName="CSA" targetName="CSA" />
-    </generated>
+    <generated />
   </component>
   <component name="CMakeSettings">
     <configurations>
@@ -34,52 +32,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="db3dc6d5-71ec-4cec-a64a-816180863810" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MIPS_pipeline_base_code.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/beq_ex.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.14.3/CMakeCCompiler.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.14.3/CMakeCXXCompiler.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.14.3/CMakeDetermineCompilerABI_C.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.14.3/CMakeDetermineCompilerABI_CXX.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.14.3/CMakeSystem.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.14.3/CompilerIdC/CMakeCCompilerId.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.14.3/CompilerIdC/a.out" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.14.3/CompilerIdCXX/CMakeCXXCompilerId.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.14.3/CompilerIdCXX/a.out" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/CXX.includecache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/DependInfo.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/build.make" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/cmake_clean.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/depend.internal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/depend.make" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/flags.make" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/link.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/maina.cpp.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/progress.make" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-environment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/cmake.check_cache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/feature_tests.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/feature_tests.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/feature_tests.cxx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CSA" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CSA.cbp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dmem.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/final.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/imem.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/jr.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stateresult_sample.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/branchsimulator_skeleton.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CSA.dir/main.cpp.o" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/trace.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IPC.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/IPC.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MIPS_pipeline.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/MIPS_pipeline.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MIPS_pipeline_base_code.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/MIPS_pipeline_base_code.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MIPS_pipeline_grading.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/MIPS_pipeline_grading.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/beq_ex.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/beq_ex.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dmem.txt" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/dmem.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/final.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/final.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imem.txt" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/imem.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/jr.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/jr.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/jump.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/jump.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lab0_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/lab0_main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lab0_main_old.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/lab0_main_old.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lab1_templete.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/lab1_templete.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stateresult.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/myAnswer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/myAnswer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stall.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/stall.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stateresult_sample.txt" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/stateresult_sample.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -105,17 +81,36 @@
     <expand />
     <select />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="247">
-              <caret line="735" column="40" lean-forward="true" selection-start-line="735" selection-start-column="40" selection-end-line="735" selection-end-column="40" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="-229">
+              <caret line="61" column="21" lean-forward="true" selection-start-line="61" selection-start-column="21" selection-end-line="61" selection-end-column="21" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/config.txt">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/trace.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="13525">
+              <caret line="541" column="10" selection-start-line="541" selection-start-column="10" selection-end-line="541" selection-end-column="10" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lab1/final.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2200">
+              <caret line="88" column="21" selection-start-line="88" selection-start-column="21" selection-end-line="88" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -145,10 +140,11 @@
         <option value="$PROJECT_DIR$/imem.txt" />
         <option value="$PROJECT_DIR$/dmem.txt" />
         <option value="$PROJECT_DIR$/stateresult_sample.txt" />
-        <option value="$PROJECT_DIR$/main.cpp" />
         <option value="$PROJECT_DIR$/cmake-build-debug/RFresult.txt" />
         <option value="$PROJECT_DIR$/cmake-build-debug/dmemresult.txt" />
         <option value="$PROJECT_DIR$/cmake-build-debug/stateresult.txt" />
+        <option value="$PROJECT_DIR$/lab1/final.cpp" />
+        <option value="$PROJECT_DIR$/main.cpp" />
       </list>
     </option>
   </component>
@@ -157,10 +153,10 @@
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds">
-    <option name="x" value="-1716" />
-    <option name="y" value="128" />
+    <option name="x" value="41" />
+    <option name="y" value="23" />
     <option name="width" value="1610" />
-    <option name="height" value="976" />
+    <option name="height" value="942" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -170,7 +166,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -182,6 +177,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -190,16 +186,18 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="settings.editor.selected.configurable" value="configurable.group.tools" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.appearance" />
     <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/cmake-build-debug/stateresult.txt" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/cmake-build-debug" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/lab1" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -213,13 +211,6 @@
         </RuleState>
       </list>
     </option>
-  </component>
-  <component name="RunManager">
-    <configuration name="CSA" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CSA" TARGET_NAME="CSA" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CSA" RUN_TARGET_NAME="CSA">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -260,7 +251,10 @@
       <workItem from="1573057617411" duration="3908000" />
       <workItem from="1573180486733" duration="425000" />
       <workItem from="1573272080554" duration="6525000" />
-      <workItem from="1573311159616" duration="14233000" />
+      <workItem from="1573311159616" duration="14973000" />
+      <workItem from="1573916042877" duration="10000" />
+      <workItem from="1576635339788" duration="5076000" />
+      <workItem from="1576642122671" duration="4988000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <created>1571021533501</created>
@@ -367,21 +361,29 @@
       <option name="project" value="LOCAL" />
       <updated>1573324093714</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="update">
+      <created>1573357797912</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1573357797912</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="134810000" />
+    <option name="totallyTimeSpent" value="145624000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1716" y="128" width="1610" height="976" extended-state="0" />
+    <frame x="41" y="23" width="1610" height="942" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1492347" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15497449" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32732317" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.34276018" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.34276018" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -389,9 +391,9 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Database Changes" order="8" />
       <window_info anchor="bottom" id="TeamCity" order="9" />
-      <window_info anchor="bottom" id="Terminal" order="10" weight="0.32970297" />
-      <window_info anchor="bottom" id="Event Log" order="11" side_tool="true" />
-      <window_info anchor="bottom" id="CMake" order="12" weight="0.32871288" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="10" sideWeight="0.49936223" visible="true" weight="0.22823529" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.50063777" side_tool="true" weight="0.32918552" />
+      <window_info anchor="bottom" id="CMake" order="12" weight="0.24352941" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.29864255" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -434,7 +436,7 @@
         <state relative-caret-position="-508" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lab0_main_old.cpp">
+    <entry file="file://$PROJECT_DIR$/lab1/lab0_main_old.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-3598">
           <caret line="6" selection-start-line="6" selection-end-line="10" selection-end-column="13" />
@@ -449,7 +451,7 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/RFresult.txt" />
-    <entry file="file://$PROJECT_DIR$/lab1_templete.cpp">
+    <entry file="file://$PROJECT_DIR$/lab1/lab1_templete.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="730">
           <caret line="257" column="15" selection-start-line="257" selection-start-column="15" selection-end-line="257" selection-end-column="15" />
@@ -470,10 +472,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+    <entry file="file://$PROJECT_DIR$/lab1/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/MIPS_pipeline.cpp">
+    <entry file="file://$PROJECT_DIR$/lab1/MIPS_pipeline.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5575">
           <caret line="223" column="31" selection-start-line="223" selection-start-column="31" selection-end-line="231" selection-end-column="29" />
@@ -483,14 +485,14 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myAnswer.cpp">
+    <entry file="file://$PROJECT_DIR$/lab1/myAnswer.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
           <caret line="8" column="33" lean-forward="true" selection-start-line="8" selection-start-column="33" selection-end-line="8" selection-end-column="33" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/MIPS_pipeline_grading.cpp">
+    <entry file="file://$PROJECT_DIR$/lab1/MIPS_pipeline_grading.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="276">
           <caret line="517" column="13" lean-forward="true" selection-end-line="718" selection-end-column="1" />
@@ -508,92 +510,67 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/stateresult_grading.txt" />
-    <entry file="file://$PROJECT_DIR$/stateresult.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/IPC.cpp">
+    <entry file="file://$PROJECT_DIR$/stateresult.txt" />
+    <entry file="file://$PROJECT_DIR$/lab1/IPC.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="185">
           <caret line="802" column="5" lean-forward="true" selection-end-line="821" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/stall.cpp">
+    <entry file="file://$PROJECT_DIR$/lab1/stall.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="259">
           <caret line="663" column="62" selection-start-line="663" selection-start-column="62" selection-end-line="663" selection-end-column="62" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/jump.cpp">
+    <entry file="file://$PROJECT_DIR$/lab1/jump.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="271">
           <caret line="498" column="40" lean-forward="true" selection-end-line="733" selection-end-column="1" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cmake-build-debug/RFresult_grading.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cmake-build-debug/dmemresult_grading.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cmake-build-debug/stateresult_grading.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="200">
-          <caret line="8" column="9" lean-forward="true" selection-start-line="8" selection-start-column="9" selection-end-line="8" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MIPS_pipeline_base_code.cpp">
+    <entry file="file://$PROJECT_DIR$/cmake-build-debug/RFresult_grading.txt" />
+    <entry file="file://$PROJECT_DIR$/cmake-build-debug/dmemresult_grading.txt" />
+    <entry file="file://$PROJECT_DIR$/cmake-build-debug/stateresult_grading.txt" />
+    <entry file="file://$PROJECT_DIR$/lab1/MIPS_pipeline_base_code.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-5128">
           <caret line="527" column="9" lean-forward="true" selection-start-line="527" selection-start-column="9" selection-end-line="527" selection-end-column="9" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dmemresult_sample.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="9" column="8" lean-forward="true" selection-end-line="1000" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/jr.cpp">
+    <entry file="file://$PROJECT_DIR$/dmemresult_sample.txt" />
+    <entry file="file://$PROJECT_DIR$/lab1/jr.cpp">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/imem.txt">
+    <entry file="file://$PROJECT_DIR$/lab1/imem.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="488">
           <caret line="43" column="8" selection-start-line="43" selection-start-column="8" selection-end-line="43" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dmem.txt">
+    <entry file="file://$PROJECT_DIR$/lab1/dmem.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="125">
           <caret line="5" column="8" lean-forward="true" selection-start-line="5" selection-start-column="8" selection-end-line="5" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/final.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="59">
-          <caret line="686" column="17" lean-forward="true" selection-start-line="686" selection-start-column="17" selection-end-line="686" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/beq_ex.cpp">
+    <entry file="file://$PROJECT_DIR$/lab1/beq_ex.cpp">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/stateresult_sample.txt">
+    <entry file="file://$PROJECT_DIR$/lab1/stateresult_sample.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="506">
           <caret line="832" selection-start-line="832" selection-end-line="832" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lab0_main.cpp">
+    <entry file="file://$PROJECT_DIR$/lab1/lab0_main.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-7897">
           <caret line="10" column="8" selection-start-line="10" selection-start-column="8" selection-end-line="10" selection-end-column="8" />
@@ -615,13 +592,37 @@
     <entry file="file://$PROJECT_DIR$/cmake-build-debug/stateresult.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/trace.txt.out">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/branchsimulator_skeleton.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="8" column="20" lean-forward="true" selection-end-line="35" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="247">
-          <caret line="735" column="40" lean-forward="true" selection-start-line="735" selection-start-column="40" selection-end-line="735" selection-end-column="40" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-229">
+          <caret line="61" column="21" lean-forward="true" selection-start-line="61" selection-start-column="21" selection-end-line="61" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trace.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="13525">
+          <caret line="541" column="10" selection-start-line="541" selection-start-column="10" selection-end-line="541" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lab1/final.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2200">
+          <caret line="88" column="21" selection-start-line="88" selection-start-column="21" selection-end-line="88" selection-end-column="21" />
         </state>
       </provider>
     </entry>
